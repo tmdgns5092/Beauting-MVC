@@ -1,0 +1,28 @@
+<%@ page pageEncoding="utf-8" %>
+
+<div class="modal fade" id="product-prepaid-choice-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog propaid-choice-modal">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-body">
+                <button class="close-btn02" onclick="productPreButtonUp(this)" data-dismiss="modal"><i class="fas fa-times"></i></button>
+                <h2>보유 선불권 선택</h2>
+                <div class="prepaid-table-top">
+                    <h4>선택한 선불권명</h4>
+                    <p id="product-prepaid-info-name"></p>
+                    사용 가능 금액 : <p id="product-prepaid-info-cost"></p>
+                    적용 후 남은 금액 : <p id="product-prepaid-info-surplus-cost"></p>
+                </div>
+                <div class="prepaid-content">
+                    <table class="" id="product-prepaid-choice-table"></table>
+                </div>
+                <div class="prepaid-content" style="display: none">
+                    <table class="" id="product-prepaid-has-info"></table>
+                </div>
+                <div class="content02-save mt-15">
+                    <button type="button" class="save-btn01" onclick="productServiceChoiceFromPrepaid(this)">적용</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

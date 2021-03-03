@@ -1,0 +1,183 @@
+<%@ page pageEncoding="utf-8" %>
+
+<div class="modal fade" id="sales-balance" tabindex="-1" role="dialog" aria-labelledby="sales-balance"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="sales-balance-modal">
+            <div class="modal-header" style="text-align: right">
+                <div class="close-btn" data-dismiss="modal">
+                    <img src="/static/test-img/close-btn.png" alt="X버튼 이미지">
+                </div>
+            </div>
+            <div class="modal-body">
+                <p>선불권 선택</p>
+                <table>
+                    <thead>
+                    <tr>
+                        <td width="15%">선택</td>
+                        <td width="35%">정액권명</td>
+                        <td width="25%">잔액</td>
+                        <td width="25%">만료일</td>
+                    </tr>
+                    </thead>
+                </table>
+                <div style="width:100%; height:100px; overflow:auto">
+                    <table>
+                        <tbody id="prepaid_tbody">
+                        <tr>
+                            <td>
+                                <input type="radio" id="">
+                                <label for=""></label>
+                            </td>
+                            <td>
+                                <p>Lorem ipsum.</p>
+                            </td>
+                            <td>
+                                <p>1,000,000<span>원</span> </p>
+                            </td>
+                            <td>
+                                <p>
+                                   2018.00.00
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="radio" id="">
+                                <label for=""></label>
+                            </td>
+                            <td>
+                                <p>Lorem ipsum.</p>
+                            </td>
+                            <td>
+                                <p>1,000,000<span>원</span> </p>
+                            </td>
+                            <td>
+                                <p>
+                                    2018.00.00
+                                </p>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-10">사용 금액 입력 <i class="fas fa-question-circle"></i></p>
+                <div>
+                    <input type="text" placeholder="사용할 금액을 입력해주세요.">
+                    <button>사용</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* 선불권 출력*/
+    function prepaidMake(){
+        var json_object = '${rMap.prepaid_map}';
+        var array = $.parseJSON(json_object);
+        var tmp = '';
+        $('#pre_use_cost').val('');
+
+        if($('#prepaid_tbody tr').length < 1){
+            $.each(array, function(index, item){
+                // //console.log("idx : " + item.idx + ", cost : " + item.cost + ", name : " + item.name + ", validity : " + item.validity);
+
+                tmp = tmp + '<tr class="prepaid-select" data-value="'+item.idx+'">\n' +
+                    '                    <td width="15%"><input type="radio" name="prepaid_radio"></td>\n' +
+                    '                    <td width="35%">' + item.name + '</td>\n' +
+                    '                    <td width="25%"><p name="p-pre-cost">'+ comma(item.cost) +' 원</p></td>\n' +
+                    '                    <td width="25%">' + item.validity + '</td>\n' +
+                    '                    <input type="hidden" name="pre_idx" value="'+item.idx+'">\n' +
+                    '                    <input type="hidden" name="pre_name" value="'+item.name+'">\n' +
+                    '                    <input type="hidden" name="pre_cost" value="'+item.cost+'">\n' +
+                    '                    <input type="hidden" name="pre_origin_cost" value="'+item.cost+'">\n' +
+                    '                    <input type="hidden" name="pre_validity" value="'+item.validity+'">' +
+                    '                </tr>'
+            });
+            $('#prepaid_tbody').append(tmp);
+        }else{
+            var idx = $(prepaid_obj).find('input[name=sales_prepaid_idx]').val();
+
+            // if($(prepaid_obj).find('input[name=sales_prepaid_idx]').length < 0 || $(prepaid_obj).find('input[name=sales_prepaid_cost]').length < 0 || $(prepaid_obj).find('input[name=sales_prepaid_name]').length < 0){
+            $('#prepaid_tbody').find('input[name="prepaid_radio"]').removeAttr('checked');
+            /*            }else{
+
+                            $.each($('#prepaid_tbody tr'), function(index, item){
+                                if($(item).attr('data-value') == idx){
+                                    $(item).find('input[name=prepaid_radio]').prop('checked', true);
+                                    var origin_cost = parseInt($(item).find('input[name=pre_origin_cost]').val());
+                                    var cost = parseInt($(item).find('input[name=pre_cost]').val());
+
+                                    //console.log(origin_cost);
+                                    //console.log(cost);
+                                    $(item).find('p[name=p-pre-cost]').empty();
+                                    $(item).find('p[name=p-pre-cost]').append('<strike name="del">'+origin_cost+'</strike><br>' + comma(cost) + ' 원');
+                                    $('#pre_use_cost').val(origin_cost - cost);
+
+                                    // //console.log($(item).find('input[name=pre_idx]').val());
+                                    // //console.log($(item).find('input[name=pre_name]').val());
+                                    // //console.log($(item).find('input[name=pre_cost]').val());
+                                }
+                            });
+                        }*/
+        }
+    }
+
+
+
+    /* tr click to raiod check */
+    $(document).on('click', '.prepaid-select', function(){
+        $(this).closest('tr').find('input[name=prepaid_radio]').prop('checked', true);
+        var prepaid_cost = parseInt(uncomma($(this).closest('tr').find('input[name=pre_origin_cost]').val()));
+        var row_cost = parseInt($(prepaid_obj).closest('tr').find('li[name=cost]').attr('data-value'));
+
+        var p_append_text = prepaid_cost - row_cost;
+        if(p_append_text < 0){ p_append_text = 0}
+
+        /* strike tag remove */
+        strikeRemove();
+
+        /* 선택 시 금액 출력 */
+        if(row_cost <= prepaid_cost){ $('#pre_use_cost').val(row_cost); }
+        else{ $('#pre_use_cost').val(prepaid_cost); }
+
+        /* strike tag append */
+        var pre_cost = $(this).find('p[name=p-pre-cost]').text();
+        $(this).find('p[name=p-pre-cost]').empty();
+        $(this).find('p[name=p-pre-cost]').append('<strike name="del">'+pre_cost+'</strike><br>' + comma(p_append_text) + ' 원');
+        // $(this).find('input[name=pre_cost]').val(p_append_text);
+
+    });
+
+    /* 선불권 사용 버튼 클릭 */
+    function usePerpaidPoint(){
+        var idx = $('input[name=prepaid_radio]:checked').closest('tr').find('input[name=pre_idx]').val();
+        var name = $('input[name=prepaid_radio]:checked').closest('tr').find('input[name=pre_name]').val();
+        var cost = $('input[name=prepaid_radio]:checked').closest('tr').find('input[name=pre_cost]').val();
+
+        var text_cost = $('#pre_use_cost').val();
+
+
+        $(prepaid_obj).closest('tr').find('input[name=prepaid-text]').val(comma(text_cost));
+
+        $(prepaid_obj).find('input[name=sales_prepaid_idx]').val(idx);
+        $(prepaid_obj).find('input[name=sales_prepaid_name]').val(name);
+        $(prepaid_obj).find('input[name=sales_prepaid_cost]').val(cost);
+
+        $('.sales-btn-balance').css('display', 'none');
+    }
+
+    /* 취소선 전체 제거 */
+    function strikeRemove(){
+        /* check false */
+        $.each($('#prepaid_tbody tr'), function(index, item){
+            /* strike tag remove */
+            if($(item).find('strike[name=del]').length > 0){
+                var inner_text = $(item).find('strike[name=del]').text();
+                $(item).find('p[name=p-pre-cost]').empty();
+                $(item).find('p[name=p-pre-cost]').text(inner_text);
+            }
+        });
+    }
+</script>

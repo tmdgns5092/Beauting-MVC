@@ -1,0 +1,39 @@
+<%@ page pageEncoding="utf-8"%>
+
+<div class="footer">
+    <div class="wrap">
+        <div>
+            <ul class="menu">
+                <li class="item"><a href="javascript:;" target="_blank">이용약관</a></li>
+                <li class="item"><a href="javascript:;" target="_blank">개인정보취급방침</a></li>
+                <li class="item"><a href="javascript:;">이용방법</a></li>
+                <li class="item"><a href="javascript:;">공지사항</a></li>
+                <li class="item">가농뷰티</li>
+                <li class="item">대표이사 : 오태겸</li>
+                <li class="item">사업자등록번호 617-36-22290</li>
+                <li class="item">고객센터 051.918.4862</li>
+            </ul>
+        </div>
+        <div>
+            <ul class="menu">
+                <li class="item">Copyright © 2019 by GanongBeauty</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<!--/.Footer-->
+<script src="${pageContext.request.contextPath}/static/plugins/nice-select/js/jquery.nice-select.min.js"></script>
+
+<%--툴팁--%>
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
+<%--툴팁--%>
+<script>
+    $(document).ready(function() {
+        $('select').niceSelect();
+    });
+</script>
+<script src="${pageContext.request.contextPath}/static/plugins/bootstrap/js/bootstrap.min.js"></script>

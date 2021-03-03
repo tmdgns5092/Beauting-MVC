@@ -1,0 +1,7 @@
+<%@ page pageEncoding="utf-8" %>
+<div class="box-body box-content">
+    <%-- 횟수권(티켓) --%>
+    <div class="btn-group" role="group" aria-label="..." style="flex: 1; text-align: right;" name="product-ticket-body"></div>
+    <table class="table table-bordered text-center" name="product-ticket-table"></table>
+    <%-- /. 횟수권(티켓) --%>
+</div>

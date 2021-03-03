@@ -1,0 +1,13 @@
+<%--
+<%@ page pageEncoding="utf-8" %>
+&lt;%&ndash;Bootstrap Menu JS &ndash;%&gt;
+<script src="/plugins/bootstrap/js/toastr.js"></script>
+<script src="/plugins/bootstrap/js/highlight-8.6.default.min.js"></script>
+
+&lt;%&ndash;Bootstrap Menu CSS &ndash;%&gt;
+<link rel="stylesheet" href="/plugins/bootstrap/css/toastr.css">
+<link rel="stylesheet" href="/plugins/bootstrap/css/highlight-8.6.default.min.css">
+
+&lt;%&ndash; Bootstrap Menu&ndash;%&gt;
+<script src="/plugins/bootstrap/dist/BootstrapMenu.min.js"></script>
+--%>

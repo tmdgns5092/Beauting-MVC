@@ -1,0 +1,55 @@
+<%@ page pageEncoding="utf-8" %>
+<div class="navbar main-navber" id="navbar">
+    <div class="container" style="    width: 1300px;
+    background: -webkit-gradient(linear, left top, right top, from(rgba(0,0,0,0)), color-stop(50%, #202e40));
+    background: linear-gradient(to right, rgba(0,0,0,0.0)0%, #202e40 50%);">
+        <a class="cool-link" href="javascript:void(0);" onclick="logoutCheck();">로그아웃</a>
+        <a class="cool-link m-none" href="javascript:void(0);" onclick="location.href = '/setting'">설정</a>
+        <a class="cool-link m-none" href="/selectCallHistory">수신이력</a>
+        <a class="cool-link m-none" <%----%> href="javascript:void(0)" id="id_ctimsgarea">발신자표시</a>
+        <a class="cool-link m-none" href="javascript:void(0);" onclick="location.href = '/Messages/messageAuto'">자동문자</a>
+        <a class="cool-link m-none" href="javascript:void(0);" onclick="location.href = '/Messages/message'">문자</a>
+        <a class="cool-link m-none" href="javascript:void(0);" onclick="location.href = '/Schedule/scheduleCalendar'">스케줄</a>
+        <a class="cool-link m-none" href="javascript:void(0);" onclick="location.href = '/Employee/employeeList'">직원</a>
+        <a class="cool-link m-none" href="javascript:void(0);" onclick="location.href = '/Services/serviceRegistration'">시술</a>
+        <a class="cool-link m-none" href="javascript:void(0);" onclick="location.href = '/Client/clientList'">고객</a>
+        <a class="cool-link m-none" href="javascript:void(0);" onclick="location.href = '/Sales/searchClient'">결제</a>
+        <a class="cool-link m-none" href="javascript:void(0);" onclick="location.href = '/Reservation/calendar'">예약</a>
+        <div onclick="location.href = '/Reservation/calendar'">BEAUT<span style=" margin-right: 4px;font-weight: 600;font-style: oblique;color: #ffcd20;">I</span>NG</div>
+        <%--<a class="cool-link" href="">callHistory</a>--%>
+
+        <%--<li class="active bell"><a href="#a" onclick="location.href = '/Sales/sales'">결제</a></li>--%>
+    </div>
+    <div class="pc-none nav-notice">
+        <i class="fas fa-check" style="margin-right: 5px;font-size: 10px;"></i> PC 사용시 다양한 기능을 사용할수 있습니다.
+    </div>
+</div>
+<%
+    String userAgent = request.getHeader("User-Agent");
+    if(userAgent.indexOf("Trident") > 0 || userAgent.indexOf("MSIE") > 0){
+%>
+<%@include file="../include/utils/sunpoScripts.jspf"%>
+<% }%>
+<input type="hidden" id="s-info-corpNum" value="${shopInfo.com_num}">
+<form name="form2" style="position: absolute">
+    <OBJECT id="USBDial" classid="CLSID:47C94772-1DF5-4509-9AB2-070E03857423" codebase="http://1.234.23.8:8081/multicid.cab#version=7,5,0,0"  height="0" width="0"></OBJECT>
+    <%--<cab cabfile = "${pageContext.request.contextPath}/dist/cab/manual.cab" basedir="htdocs/manual"></cab>--%>
+</form>
+<script>
+    $('#id_ctimsgarea').click(function () {
+        var phonetime = new Date().format('yyyyMMddHHmmss');
+        var cid_len=  "P";
+        var url = "/getCall?srchStr=" + cid_len + "&phonetime=" + phonetime + "&phoneNum=01045405327";  //여기서 전송한 페이지가 팝업으로 뜨면서 번호가 뜹니다.
+        var popupX = (document.body.offsetWidth / 2) - (400 / 2);
+        var popupY= (document.body.offsetHeight / 2) - (700 / 2);
+        var wcti = window.open(url, "",'status=no, resizable=no, height=500, width=500, left='+ popupX + ', top='+ popupY);
+        wcti.focus();
+    });
+
+    function logoutCheck(){
+        if(confirm("로그아웃 하시겠습니까?")){
+            submitAjax("/logout");
+            location.href = document.URL;
+        } else return false;
+    }
+</script>

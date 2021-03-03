@@ -1,0 +1,525 @@
+<%@ page pageEncoding="utf-8" %>
+<!-- 티켓 선택 모달 -->
+<div class="modal fade" id="sales-ticket" tabindex="-1" role="dialog" aria-labelledby="sales-ticket" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <div class="sales-prepayment-modal">
+            <div class="modal-body">
+                <button class="close-btn02" data-dismiss="modal"><i class="fas fa-times"></i></button>
+                <h2>티켓판매</h2>
+                <div class="modal-body-left">
+                    <h4>01.판매 티켓 선택</h4>
+                    <div class="servicemodal-content" style="height: auto;padding: 0 0 5px;">
+                        <%-- 티켓 카테고리 ul li --%>
+                        <ul id="ticket_cate_box">
+                        </ul>
+                    </div>
+                    <h4>02.선택</h4>
+                    <div class="servicemodal-content">
+                        <%-- 티켓 디테일 ul li --%>
+                        <ul id="ticket_detail_box">
+                        </ul>
+                    </div>
+                    <input type="hidden" id="ticket_category_name" value="0">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th width="25%">티켓명</th>
+                            <th width="25%">판매금액</th>
+                            <th width="25%">횟수</th>
+                            <th width="25%">유효기간&nbsp;(개월)</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><p id="ticket_name_modal"></p><input type="hidden" id="ticket_idx_tmp"></td>
+                            <td>
+                                <input type="text" id="ticket_cost_modal" readonly>
+                            </td>
+                            <td>
+                                <input type="text" id="ticket_count_modal" onkeyup="sumCountChange(this)"
+                                       onkeydown="onlyNumber(this)" oninput="maxLengthCheck(this), ticketCostChange(this);" maxlength="2" onchange="">
+                                <input type="hidden" id="ticket_origin_count_modal" onkeyup="sumCountChange(this)"
+                                       onkeydown="onlyNumber(this)" oninput="maxLengthCheck(this)" maxlength="2">
+                            </td>
+                            <td>
+                                <input class="w-192" type="text" id="ticket_validity_modal">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <%-------------------------------------------------------------------------------------------------%>
+                    <%-------------------------------------------- 직원 선택 --------------------------------------------%>
+                    <%-------------------------------------------------------------------------------------------------%>
+                    <h4>직원별 판매 금액 입력</h4>
+                    <div class="prepay-member-list">
+                        <div class="prepayment-select">
+                            <select id="ticket_pay_empl_list_box1">
+                                <option value="">선택</option>
+                            </select>
+                            <input type="text" id="ticket_employee_one_cost" onkeydown="onlyNumber(this)" value="0">
+                            <button id="ticket-employeePlus" onClick="ticketPlusEmployee()"><i
+                                    class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                        <div class="prepayment-input">
+                            <select id="ticket_pay_empl_list_box2" style="display: none;">
+                                <option value="">선택</option>
+                            </select>
+                            <input type="text" id="ticket_employee_two_cost" onkeydown="onlyNumber(this)"
+                                   style="display: none;" value="0">
+                            <button id="ticket-employeeMinus" style="display: none;" onClick="ticketMinusEmployee()"><i
+                                    class="glyphicon glyphicon-minus"></i></button>
+                        </div>
+                    </div>
+                    <%-------------------------------------------------------------------------------------------------%>
+                    <%-------------------------------------------- /. 직원 선택 --------------------------------------------%>
+                    <%-------------------------------------------------------------------------------------------------%>
+
+                    <%--티켓 합치기--%>
+                    <%--<input class="form-check-input" type="checkbox" value="" id="merge-chk">--%>
+                    <%--<label class="form-check-label" for="merge-chk">--%>
+                        <%--티켓 합치기--%>
+                    <%--</label>--%>
+                    <div id="chk-div" style="display: none">
+                        <input type="hidden" id="ticket_total_cost_by_fee" value="0">
+                        <input type="hidden" id="sum_has_ticket_idx">
+                        <input type="hidden" id="sum_has_ticket_count">
+                        <input type="hidden" id="sum_has_ticket_name">
+                        <input type="hidden" id="sum_has_ticket_sales_idx">
+                        <input type="hidden" id="sum_has_ticket_validity">
+                        <table class="merge-table">
+                            <thead>
+                            <tr>
+                                <th width="33.333%">티켓명</th>
+                                <th width="33.333%">남은횟수</th>
+                                <th width="33.333%">남은 유효기간</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <select class="wide" name="ticket_sum_select_tag" id="ticket_sum_select_tag">
+                                    </select>
+                                </td>
+                                <td>
+                                    <p id="ticket_sum_cost"></p>
+                                </td>
+                                <td>
+                                    <p id="ticket_sum_validity"></p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-body-right">
+                    <table id="ticket_right_tables">
+                        <tbody>
+                        <tr>
+                            <td>총 횟수</td>
+                            <td><p id="right_sum_count">0</p><span>회</span></td>
+                        </tr>
+                        <tr name="contens">
+                            <td>할인
+                                <button class="ticket-sale-btn">선택</button>
+                                <%-- 할인 선택 모달 --%>
+                                <div class="ticket-sale-btn-content">
+                                    <input type="text" id="ticket_sale_text" placeholder="할인 금액을 입력해주세요.">
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            <td width="20%" class="ticket-pay-btns"><p>1</p></td>
+                                            <td width="20%" class="ticket-pay-btns"><p>2</p></td>
+                                            <td width="20%" class="ticket-pay-btns"><p>3</p></td>
+                                            <td class="ticket-pay-btns"><p>천원</p></td>
+                                            <td class="ticket-pay-btns"><p>만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>4</p></td>
+                                            <td class="ticket-pay-btns"><p>5</p></td>
+                                            <td class="ticket-pay-btns"><p>6</p></td>
+                                            <td class="ticket-won-btns" colspan="2"><p>금액</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>7</p></td>
+                                            <td class="ticket-pay-btns"><p>8</p></td>
+                                            <td class="ticket-pay-btns"><p>9</p></td>
+                                            <td class="ticket-percent-btns" colspan="2"><p>%</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>0</p></td>
+                                            <td class="ticket-pay-btns"><p>00</p></td>
+                                            <td class="ticket-pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                            <td colspan="2"><p class="modal-content-close">취소</p></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td><p name="ticket-sale-cost" id="ticket-sale-cost">0</p>
+                                <p id="ticket_sale_type">%</p></td>
+                        </tr>
+                        <tr name="contens">
+                            <td>현금
+                                <button class="ticket-pay-btn">선택</button>
+                                <%-- 현금 선택 모달 --%>
+                                <div class="ticket-pay-btn-content">
+                                    <input type="text" id="ticket_pay_text" placeholder="금액을 입력해주세요.">
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            <td width="20%" class="ticket-pay-btns"><p>1</p></td>
+                                            <td width="20%" class="ticket-pay-btns"><p>2</p></td>
+                                            <td width="20%" class="ticket-pay-btns"><p>3</p></td>
+                                            <td class="ticket-pay-btns"><p>천원</p></td>
+                                            <td class="ticket-pay-btns"><p>만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>4</p></td>
+                                            <td class="ticket-pay-btns"><p>5</p></td>
+                                            <td class="ticket-pay-btns"><p>6</p></td>
+                                            <td class="ticket-pay-btns" colspan="2"><p>십만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>7</p></td>
+                                            <td class="ticket-pay-btns"><p>8</p></td>
+                                            <td class="ticket-pay-btns"><p>9</p></td>
+                                            <td class="ticket-pay-cost-submit" colspan="2"><p>저장</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>0</p></td>
+                                            <td class="ticket-pay-btns"><p>00</p></td>
+                                            <td class="ticket-pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                            <td colspan="2"><p class="modal-content-close">취소</p></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td><p name="ticket-pay-cost" id="ticket-pay-cost">0</p><span>원</span></td>
+                        </tr>
+                        <tr name="contens">
+                            <td>카드
+                                <button class="ticket-card-btn">선택</button>
+                                <div class="ticket-card-btn-content">
+                                    <input type="text" id="ticket_card_text" placeholder="금액을 입력해주세요.">
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            <td class="ticket-pay-btns" width="20%"><p>1</p></td>
+                                            <td class="ticket-pay-btns" width="20%"><p>2</p></td>
+                                            <td class="ticket-pay-btns" width="20%"><p>3</p></td>
+                                            <td class="ticket-pay-btns"><p>천원</p></td>
+                                            <td class="ticket-pay-btns"><p>만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>4</p></td>
+                                            <td class="ticket-pay-btns"><p>5</p></td>
+                                            <td class="ticket-pay-btns"><p>6</p></td>
+                                            <td colspan="2"><p>십만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>7</p></td>
+                                            <td class="ticket-pay-btns"><p>8</p></td>
+                                            <td class="ticket-pay-btns"><p>9</p></td>
+                                            <td class="ticket-card-cost-submit" colspan="2"><p>저장</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>0</p></td>
+                                            <td class="ticket-pay-btns"><p>00</p></td>
+                                            <td class="ticket-pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                            <td colspan="2"><p class="modal-content-close">취소</p></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td><p name="ticket-card-cost" id="ticket-card-cost">0</p><span>원</span></td>
+                        </tr>
+                        <tr name="contens">
+                            <td>상품권 (매출)
+                                <button class="ticket-gift-btn">선택</button>
+                                <div class="ticket-gift-btn-content">
+                                    <input type="text" id="ticket_gift_text" placeholder="금액을 입력해주세요.">
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            <td class="ticket-pay-btns" width="20%"><p>1</p></td>
+                                            <td class="ticket-pay-btns" width="20%"><p>2</p></td>
+                                            <td class="ticket-pay-btns" width="20%"><p>3</p></td>
+                                            <td class="ticket-pay-btns"><p>천원</p></td>
+                                            <td class="ticket-pay-btns"><p>만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>4</p></td>
+                                            <td class="ticket-pay-btns"><p>5</p></td>
+                                            <td class="ticket-pay-btns"><p>6</p></td>
+                                            <td class="ticket-pay-btns" colspan="2"><p>십만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>7</p></td>
+                                            <td class="ticket-pay-btns"><p>8</p></td>
+                                            <td class="ticket-pay-btns"><p>9</p></td>
+                                            <td class="ticket-gift-cost-submit" colspan="2"><p>저장</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>0</p></td>
+                                            <td class="ticket-pay-btns"><p>00</p></td>
+                                            <td class="ticket-pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                            <td colspan="2"><p class="modal-content-close">취소</p></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td><p name="ticket-gift-cost" id="ticket-gift-cost">0</p><span>원</span></td>
+                        </tr>
+                        <tr name="contens">
+                            <td>기타 (매출)
+                                <button class="ticket-other-btn">선택</button>
+                                <div class="ticket-other-btn-content">
+                                    <input type="text" id="ticket_other_text" placeholder="금액을 입력해주세요.">
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            <td class="ticket-pay-btns" width="20%"><p>1</p></td>
+                                            <td class="ticket-pay-btns" width="20%"><p>2</p></td>
+                                            <td class="ticket-pay-btns" width="20%"><p>3</p></td>
+                                            <td class="ticket-pay-btns"><p>천원</p></td>
+                                            <td class="ticket-pay-btns"><p>만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>4</p></td>
+                                            <td class="ticket-pay-btns"><p>5</p></td>
+                                            <td class="ticket-pay-btns"><p>6</p></td>
+                                            <td class="ticket-pay-btns" colspan="2"><p>십만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>7</p></td>
+                                            <td class="ticket-pay-btns"><p>8</p></td>
+                                            <td class="ticket-pay-btns"><p>9</p></td>
+                                            <td class="ticket-other-cost-submit" colspan="2"><p>저장</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>0</p></td>
+                                            <td class="ticket-pay-btns"><p>00</p></td>
+                                            <td class="ticket-pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                            <td colspan="2"><p class="modal-content-close">취소</p></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td><p name="ticket-other-cost" id="ticket-other-cost">0</p><span>원</span></td>
+                        </tr>
+
+
+                        <%-- 포인트 --%>
+                        <%--<tr name="contens">
+                            <td>포인트
+                                <button class="ticket-point-btn">선택</button>
+                                &lt;%&ndash; 기타 선택 모달 &ndash;%&gt;
+                                <div class="ticket-point-btn-content">
+                                    <span>현재 포인트</span>
+                                    <p id="ticket_point_print_tag"></p>
+                                    <P>P</P>
+                                    <input type="text" id="ticket_point_text" onkeydown="onlyNumber(this)"
+                                           oninput="maxValueCheck(this, 1)" placeholder="금액을 입력해주세요." value="0">
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            <td class="ticket-pay-btns" width="20%"><p>1</p></td>
+                                            <td class="ticket-pay-btns" width="20%"><p>2</p></td>
+                                            <td class="ticket-pay-btns" width="20%"><p>3</p></td>
+                                            <td width="20%" class="ticket-point-cost-submit"><p>확인</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>4</p></td>
+                                            <td class="ticket-pay-btns"><p>5</p></td>
+                                            <td class="ticket-pay-btns"><p>6</p></td>
+                                            <td><p class="">취소</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>7</p></td>
+                                            <td class="ticket-pay-btns"><p>8</p></td>
+                                            <td class="ticket-pay-btns"><p>9</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ticket-pay-btns"><p>0</p></td>
+                                            <td class="ticket-pay-btns"><p>00</p></td>
+                                            <td class="ticket-pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td><p name="ticket-point-cost" id="ticket-point-cost">0</p><span>p</span></td>
+                        </tr>--%>
+
+
+                        <tr>
+                            <td>미수금</td>
+                            <td><p id="ticket_miss_cost_text">0</p><span>원</span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div>
+                        <label>최종 결제금액</label>
+                        <p id="ticket_right_total_pay_cost">0</p>
+                    </div>
+
+                    <%-- ==================================== 포인트 적립 ==================================== --%>
+                    <div class="prepay-point">
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    포인트 적립
+                                    <button onclick="/*prepaid_point_box_open()*/ticket_point_box_open()"><i class="glyphicon glyphicon-credit-card"></i></button>
+                                </td>
+                                <td>
+                                    <p id="ticket_point_cost_text">0</p><p>p</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div style="display: none;" id="ticket_modal_point">
+                            <input type="text" id="ticket_add_point_text" onkeydown="onlyNumber(this)" placeholder="금액을 입력해주세요." readonly>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <td class="ticket-pay-btns" width="20%"><p>1</p></td>
+                                    <td class="ticket-pay-btns" width="20%"><p>2</p></td>
+                                    <td class="ticket-pay-btns" width="20%"><p>3</p></td>
+                                    <td width="20%"
+                                        onclick="/*prepaid_point_fix('percent')*/ticket_point_fix('percent')"><p>%
+                                        적립</p></td>
+                                </tr>
+                                <tr>
+                                    <td class="ticket-pay-btns"><p>4</p></td>
+                                    <td class="ticket-pay-btns"><p>5</p></td>
+                                    <td class="ticket-pay-btns"><p>6</p></td>
+                                    <td onclick="/*prepaid_point_fix('money')*/ticket_point_fix('money')"><p>금액적립</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="ticket-pay-btns"><p>7</p></td>
+                                    <td class="ticket-pay-btns"><p>8</p></td>
+                                    <td class="ticket-pay-btns"><p>9</p></td>
+                                    <td onclick="/*prepaid_point_fix('cancel')*/ticket_point_fix('cancel')">취소</td>
+                                </tr>
+                                <tr>
+                                    <td class="ticket-pay-btns"><p>0</p></td>
+                                    <td class="ticket-pay-btns"><p>00</p></td>
+                                    <td class="ticket-pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <%-- ==================================== /.포인트 적립 ==================================== --%>
+                </div>
+                <%-------------------------------------------------------------------------------------------------%>
+                <%-------------------------------------------- 메모 --------------------------------------------%>
+                <%-------------------------------------------------------------------------------------------------%>
+                <div class="prepay_memo">
+                    <textarea id="ticket_memo" placeholder="메모를 입력해주세요."></textarea>
+                </div>
+                <%-------------------------------------------------------------------------------------------------%>
+                <%-------------------------------------------- /.메모 --------------------------------------------%>
+                <%-------------------------------------------------------------------------------------------------%>
+                <div class="content02-save">
+                    <button class="" onclick="ticket_sale()">결제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // 모달 닫기
+    $(".modal-content-close").click(function () {
+        $(".ticket-sale-btn-content").hide();
+        $(".ticket-pay-btn-content").hide();
+        $(".ticket-card-btn-content").hide();
+        $(".ticket-gift-btn-content").hide();
+        $(".ticket-other-btn-content").hide();
+        // $(".ticket-point-btn-content").hide();
+    });
+    // 모달 오픈
+    $('.ticket-sale-btn, .ticket-pay-btn, .ticket-card-btn, .ticket-gift-btn, .ticket-other-btn/*, .ticket-point-btn*/').click(function(){
+        if ($(this).hasClass('ticket-sale-btn')) {
+            $(".ticket-sale-btn-content").show();
+        }
+        else if ($(this).hasClass('ticket-pay-btn')) {
+            ticketChoiceButtonClick("#ticket_pay_text", this);
+            $(".ticket-pay-btn-content").show();
+        }
+        else if ($(this).hasClass('ticket-card-btn')) {
+            ticketChoiceButtonClick("#ticket_card_text", this);
+            $(".ticket-card-btn-content").show();
+        }
+        else if ($(this).hasClass('ticket-gift-btn')) {
+            ticketChoiceButtonClick("#ticket_gift_text", this);
+            $(".ticket-gift-btn-content").show();
+        }
+        else if ($(this).hasClass('ticket-other-btn')) {
+            ticketChoiceButtonClick("#ticket_other_text", this);
+            $(".ticket-other-btn-content").show();
+        }
+        /*else if ($(this).hasClass('ticket-point-btn')) {
+            $('#ticket_point_print_tag').text(comma('${rMap.client_point}'));
+            ticketChoiceButtonClick("#ticket_point_text", this);
+            $(".ticket-point-btn-content").show();
+        }*/
+    });
+</script>
+
+<script>
+    $(document).mouseup(function (e) {
+        var container = $('.ticket-sale-btn-content');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });
+    $(document).mouseup(function (e) {
+        var container = $('.ticket-pay-btn-content');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });
+    $(document).mouseup(function (e) {
+        var container = $('.ticket-card-btn-content');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });
+    $(document).mouseup(function (e) {
+        var container = $('.ticket-gift-btn-content');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });
+    $(document).mouseup(function (e) {
+        var container = $('.ticket-other-btn-content');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });
+    /*$(document).mouseup(function (e) {
+        var container = $('.ticket-point-btn-content');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });*/
+    $(document).mouseup(function (e) {
+        var container = $('#ticket_modal_point');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });
+</script>
+<%--합치기 on / off--%>
+<script>
+    $(function () {
+        $("#merge-chk").click(function () {
+            if ($(this).is(":checked")) {
+                $("#chk-div").show();
+            } else {
+                $("#chk-div").hide();
+            }
+        });
+    });
+</script>

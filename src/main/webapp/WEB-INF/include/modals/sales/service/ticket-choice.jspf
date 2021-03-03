@@ -1,0 +1,24 @@
+<%@ page pageEncoding="utf-8" %>
+
+<div class="modal fade" id="ticket-choice-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog ticket-choice-modal">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-body">
+                <button class="close-btn02" onclick="ticketButtonUp(this)" data-dismiss="modal"><i class="fas fa-times"></i></button>
+                <h2>보유 횟수권 선택</h2>
+                <h4>적용할 시술 선택</h4>
+                <div class="ticket-content01">
+                    <table class="" id="ticket-choice-table"></table>
+                </div>
+                <h4>선택한 횟수권 사용</h4>
+                <div class="ticket-content02">
+                    <table class="" id="ticket-has-info"></table>
+                </div>
+                <div class="content02-save mt-15">
+                    <button type="button" class="" onclick="serviceChoiceFromTicket(this)">적용</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

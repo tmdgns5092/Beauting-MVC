@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="services">
+
+    <!-- Services 전체검색 -->
+    <select id="selectServicesLists" parameterType="hashmap" resultType="hashmap">
+      SELECT b.idx, b.category, b.name, b.cost, b.resource, b.useYN, b.procedure_int
+        <!--<choose>
+            <when test="type == 0">,IFNULL(b.resource->"$.time", "\"00:00\"") as resource, IFNULL(b.resource->"$.color","#21ABE0") AS color</when>
+            <when test="type == 1">,IFNULL(b.resource->"$.acc_cost", "\"0\"") as resource, IFNULL(b.resource->"$.validity", "\"12\"") as validity</when>
+            <when test="type == 2">,IFNULL(b.resource->"$.count", "\"0\"") as resource, IFNULL(b.resource->"$.validity", "\"12\"") as validity</when>
+        </choose>-->
+      FROM (
+        SELECT idx
+        FROM services
+        WHERE shop_idx = #{idx} AND type = #{type} AND useYN = 1
+      ) a
+      JOIN services b
+      ON a.idx = b.idx
+      ORDER BY name IS NULL DESC, idx, category
+   </select>
+    <!-- 카테고리 추가 -->
+    <insert id="insertServicesCategory" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+         INSERT INTO services(type, category, shop_idx, resource)
+         VALUES (
+            #{type},
+            #{category},
+            #{shop_idx},
+            #{resource}
+         )
+    </insert>
+    <!-- 서비스 순서 업데이트 -->
+    <insert id="updateServiceProcedureUpdate" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE services
+        SET procedure_int = ${ID}
+        WHERE idx = ${ID}
+    </insert>
+    <!-- 카테고리 수정 -->
+    <update id="updateServicesCategoryAjax" parameterType="hashmap" keyProperty="IDX" useGeneratedKeys="true">
+      UPDATE services
+      SET category = #{category} <if test="resource != null">, resource = #{resource} </if>
+      WHERE idx = #{idx} AND type = #{type} AND shop_idx = #{shop_idx}
+    </update>
+    <!-- 삭제할 카테고리의 디테일 검색 -->
+    <select id="selectDeleteServicesLists" parameterType="hashmap" resultType="hashmap">
+        SELECT b.idx, b.name, b.shop_idx
+        FROM (
+          SELECT idx
+          FROM services
+          WHERE name IS NOT NULL AND shop_idx = #{shop_idx} AND type = #{type} AND category = <choose><when test="before != null">#{before}</when><otherwise>#{category}</otherwise></choose>
+        ) a
+        JOIN services b
+        ON a.idx = b.idx
+   </select>
+    <!-- 삭제할 카테고리의 디테일 삭제 -->
+    <update id="deleteAllServicesDetailAjax" parameterType="hashmap" keyProperty="IDX" useGeneratedKeys="true">
+      UPDATE services
+      SET useYN = 0
+      WHERE idx = #{idx} AND name = #{name} AND shop_idx = #{shop_idx}
+    </update>
+    <!-- 카테고리 삭제 -->
+    <delete id="deleteServicesCategoryAjax">
+      UPDATE services
+      SET useYN = 0
+      WHERE idx = #{idx} AND category = #{category} AND name IS NULL
+    </delete>
+    <!-- 디테일 추가 -->
+    <insert id="insertServicesDetail" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+         INSERT INTO services(type, name, category, cost, resource, shop_idx)
+         VALUES (
+            #{type},
+            #{name},
+            #{category},
+            #{cost},
+            #{resource},
+            #{shop_idx}
+         )
+    </insert>
+    <!-- 디테일 수정 -->
+    <update id="updateServicesDetailAjax" parameterType="hashmap" keyProperty="IDX" useGeneratedKeys="true">
+      UPDATE services
+      SET name = #{name}, cost = #{cost}, resource = #{resource}
+      WHERE idx = #{idx}
+    </update>
+    <!-- 디테일 삭제 -->
+    <update id="deleteServicesDetailAjax" parameterType="hashmap" keyProperty="IDX" useGeneratedKeys="true">
+      UPDATE services
+      SET useYN = 0
+      WHERE idx = #{idx}
+    </update>
+    <!-- 프로시더 업데이트 -->
+    <update id="updateServicesProcedure" parameterType="hashmap" keyProperty="IDX" useGeneratedKeys="true">
+      UPDATE services
+      SET procedure_int = CASE idx WHEN ${target_idx} THEN ${this_procedure} ELSE procedure_int END,
+      procedure_int = CASE idx WHEN ${this_idx} THEN ${target_procedure} ELSE procedure_int END
+    </update>
+</mapper>

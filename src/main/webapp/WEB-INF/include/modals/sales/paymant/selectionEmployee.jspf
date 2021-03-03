@@ -1,0 +1,47 @@
+<%@ page pageEncoding="utf-8" %>
+<%-- 담당자 선택 모달 --%>
+<div class="modal fade" id="sales-employee" tabindex="-1" role="dialog" aria-labelledby="sales-employee"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="sales-employeeselection-modal">
+            <div class="modal-header" style="text-align: right">
+                <div class="close-btn" data-dismiss="modal">
+                    <img src="/static/test-img/close-btn.png" alt="X버튼 이미지">
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="sales-member-list">
+                    <p>담당자 선택</p>
+                    <table class="plus-member-table" id="sales_empl_modal_list">
+                        <tr>
+                            <td width="35%">
+                                <select class="wide employee_select" id="first">
+                                    <option value="">선택</option>
+                                </select>
+                            </td>
+                            <td width="50%">
+                                <input type="text" id="first_cost">
+                            </td>
+                            <td width="15%">
+                                <button id="append_empl_btn">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-bottom">
+                <button class="modal-btn x-btn" data-dismiss="modal">취소</button>
+                <button class="modal-btn o-btn" id="service_details_append" onclick="service_details_append()">등록</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%-- 직원 추가 --%>
+<script>
+    $('#append_empl_btn').click(function(){
+        makeAppendEmployee();
+    });
+</script>

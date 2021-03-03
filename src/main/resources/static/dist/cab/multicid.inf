@@ -1,0 +1,14 @@
+; INF file for multicid.ocx
+[version]
+signature="$CHICAGO$"
+AdvancedINF=2.0
+
+[Add.code]
+multicid.ocx=multicid.ocx
+
+[multicid.ocx]
+file-win32-x86=thiscab
+clsid={47C94772-1DF5-4509-9AB2-070E03857423}
+FfileVersion=1,0,0,1
+DestDir=11
+RegisterServer=yes

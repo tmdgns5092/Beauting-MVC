@@ -1,0 +1,322 @@
+<%@ page pageEncoding="utf-8" %>
+
+<!-- Modal -->
+<div class="modal fade" id="insertClientModal" tabindex="-1" role="dialog" aria-labelledby="insertClientModal"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document" style="width: 509px;
+    box-shadow: none;">
+        <div class="modal-content">
+            <%--<div class="modal-header" style="text-align: right; background: lightslategray">--%>
+                <%--<div class="close-btn" data-dismiss="modal">--%>
+                    <%--<img src="/css/test-img/close-btn.png" alt="X버튼 이미지">--%>
+                <%--</div>--%>
+            <%--</div>--%>
+                <div class="modal-header" style="border-bottom: 1px solid rgb(236,236,236)">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">고객 등록</h4>
+                </div>
+
+            <div class="modal-body" id="createResModalBody" style="padding: 12px 0 0 30px;">
+                <div class="addclient_item">
+                    <p>회원&nbsp;구분</p>
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        <label class="btn user-btn btn-secondary" for="member">
+                            <input type="radio" value="1" name="client_member" id="member"/>
+                            <p>회원</p>
+                        </label>
+                        <label class="btn user-btn active" for="non_member">
+                            <input type="radio" value="0" name="client_member" id="non_member" checked>
+                            <p>비회원</p>
+                        </label>
+                    </div>
+                </div>
+                <div class="addclient_item" style="border-bottom: 1px solid rgb(236,235,235);margin-bottom: 14px">
+                    <p>고객번호</p>
+                    <div style="margin-bottom: 8px">
+                        <div class="addclient_cho">
+                            <input type="radio" class="form-check-input" id="auto" value="1" name="numberCreate"/>
+                            <label class="form-check-label" for="auto">자동</label>
+                            <input type="radio" class="form-check-input" id="semi-auto" value="2" name="numberCreate"/>
+                            <label class="form-check-label" for="semi-auto">반자동</label>
+                            <input type="radio" class="form-check-input" id="manual" value="3" name="numberCreate">
+                            <label class="form-check-label" for="manual">수동</label>
+                        </div>
+                        <input type="text" placeholder="고객번호를 입력해주세요." id="clientNumber" maxlength="20" oninput="maxLengthCheck(this)" onkeydown="onlyNumber(this)">
+                        <div class="necessary-text"></div>
+                    </div>
+                </div>
+                <div class="addclient_item">
+                    <p>성명</p>
+                    <div>
+                        <input type="text" placeholder="이름을 입력해주세요." id="name" maxlength="5" oninput="maxLengthCheck(this)">
+                        <div class="necessary-text"></div>
+                    </div>
+                </div>
+                <div class="addclient_item m-item">
+                    <p>휴대폰</p>
+                    <div>
+                        <input type="tel" placeholder=" ' - ' 없이 입력해주세요" id="phone" maxlength="18"
+                               oninput="maxLengthCheck(this)" onkeydown="onlyTel(this)" onfocus="OnCheckPhone(this, event)" onkeyup="OnCheckPhone(this, event)" style="width: 262px;">
+                        <button class="double-btn" onclick="overcheck_phone()">확인</button>
+                        <div class="necessary-text" style="margin-left: 263px;"></div>
+                        <p id="phone_message"></p>
+                    </div>
+                </div>
+                <div class="addclient_item">
+                    <p>생일</p>
+                    <div class="cadd-birthday">
+                        <input type="text" placeholder="년도" id="y" maxlength="4"
+                               oninput="maxLengthCheck(this)" onkeydown="onlyNumber(this)" style="width: 146px">
+                        <input type="text" placeholder="월" id="m" maxlength="2"
+                               oninput="maxLengthCheck(this)" onkeydown="onlyNumber(this)" style="width: 99px">
+                        <input type="text" placeholder="일" id="d" maxlength="2"
+                               oninput="maxLengthCheck(this)" onkeydown="onlyNumber(this)" style="width: 99px">
+                    </div>
+                </div>
+                <div class="addclient_item">
+                    <p>고객등급</p>
+                    <div class="select-div">
+                        <select class="wide" id="rank">
+                            <option value="">선택</option>
+                            <c:set var="rank_list" value="${fn:split(shopInfo.client_rank,'/')}"/>
+                            <c:forEach var="rank" items="${rank_list}" varStatus="g">
+                                <option value="${rank}">${rank}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
+                <div class="addclient_item">
+                    <p>방문경로</p>
+                    <div class="select-div">
+                        <select class="wide" id="visit">
+                            <option value="">선택</option>
+                            <c:set var="visit_list" value="${fn:split(shopInfo.client_visit,'/')}"/>
+                            <c:forEach var="visit" items="${visit_list}" varStatus="g">
+                                <option value="${visit}">${visit}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
+                <div class="addclient_item">
+                    <p>메모</p>
+                    <div>
+                        <textarea placeholder="메모를 입력해주세요." id="memo" style="height: 124px;"></textarea>
+                    </div>
+                </div>
+                <div class="addclient_item">
+                    <p>수신동의</p>
+                    <div class="sms_send_check">
+                        <input type="checkbox" id="sms_send_check" checked>
+                        <label for="sms_send_check">예</label>
+                    </div>
+                </div>
+                    <%--<div>--%>
+                        <%--<input type="radio" class="form-check-input" value="1" name="client_member" id="member"/>--%>
+                        <%--<label class="form-check-label" for="member">회원</label>--%>
+                        <%--<input type="radio" class="form-check-input" value="0" name="client_member" id="non_member" checked>--%>
+                        <%--<label class="form-check-label" for="non_member">비회원</label>--%>
+                    <%--</div>--%>
+            </div>
+        <div class="modal-footer" style="text-align: center;">
+            <button type="button" class="btn btn-primary" id="c-add-submit" onclick="submit_insert(this)" style="color: #37454a;
+    width: 180px;
+    border-radius: 2px;
+    height: 42px;
+    font-weight: 600;
+    background-color: #ffca11;
+    border: 1px solid #ffc200;">등록</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+<%-- 전역 변수 --%>
+<script>
+    var phone_number_check = false;
+    var phone_check_str = "";
+    $("#phone").keydown(function(){
+        phone_number_check = false;
+        phone_check_str = "";
+    });
+</script>
+<%-- 고객 추가 --%>
+<script>
+    function submit_insert(obj){
+        var flag = $(obj).attr('data-value') != null ? true : false;
+        var code = $('#clientNumber').val();
+        var name = $('#name').val();
+        var phone = replaceAll($('#phone').val(), "-", "");
+        var y = $('#y').val();
+        var m = $('#m').val();
+        var d = $('#d').val();
+        var rank = $('#rank option:selected').val();
+        var visit = $('#visit option:selected').val();
+        var memo = $('#memo').val();
+        var member = $("input:radio[name=client_member]:checked").val();
+        var sms_check = $("#sms_send_check").is(":checked") ? 1 : 0;
+
+        // console.log('member : ' + member);
+
+        if(uk(code) == ""){ alert("고객번호를 입력해 주세요."); $('#clientNumber').focus(); return false;}     // code check
+        if(uk(name) == ""){ alert("성명을 입력해 주세요."); $('#name').focus(); return false;}                // name check
+        if(phone_number_check == false && phone_check_str == ""){                                        // phone check
+            var result = confirm("휴대폰 중복을 확인하지 않았습니다. 계속 하시겠습니까?");
+            if(!result) {return false; $('#phone').focus();}
+        }
+
+        $.ajax({
+            url : "/Client/insertNewClientFromAjax.do",
+            type: "post",
+            dataType : "json",
+            data : {
+                "code" : code,
+                "name" : name,
+                "phone" : phone,
+                "y" : y,
+                "m" : m,
+                "d" : d,
+                "rank" : rank,
+                "visit" : visit,
+                "memo" : memo,
+                "member" : member,
+                "sms_check" : sms_check
+            },
+            success : function(data){
+                console.log("insertClient Code 200");
+                console.log(data);
+                if(data.code == "200"){
+                    if(flag) { // 전화 수신내역에서 등록하엿음 == true, 예약판에서 하였음 == false
+                        console.log("flag" + data.idx);
+                        var map = {
+                            tel : phone,
+                            client_idx : data.idx,
+                            client_code : code
+                        };
+                        updateClientState(map);
+                        var map2 = {
+                            startDate : startDate,
+                            endDate : endDate,
+                            search_type : search_type,
+                            search_value : search_value
+                        };
+                        form_submit(document.URL, map2);
+                    } // 예약판에서 등록하였음.
+                    else location.href = document.URL;
+                } else if(data.code == "902"){
+                    alert("이미 사용중인 고객번호 입니다.");
+                    $('#clientNumber').focus();
+                    return false;
+                } else{
+                    alert("잠시 후 다시 시도해 주세요.");
+                    location.href = document.URL;
+                }
+            },
+            error : function(){
+                alert("에러가 발생했습니다.");
+                location.href = document.URL;
+            }
+        });
+    }
+</script>
+<%-- 휴대폰 번호 중복 체크 --%>
+<script>
+    function overcheck_phone(){
+        if(uk($('#phone').val()) == "") {alert("휴대폰 번호를 입력해 주세요."); $('#phone').focus(); return false;}
+
+        var phone = $('#phone').val();
+        if((phone.match(/-/g) || []).length < 2){
+            alert("잘못된 휴대폰 번호입니다.");
+            $('#phone').focus();
+            return false;
+        }
+        phone = replaceAll(phone, "-", "");
+
+        $.ajax({
+            url : "/Client/clientOverCheckFromPhone.do",
+            type: "post",
+            data : {
+                "phone" : phone
+            },
+            dataType : "json",
+            success : function(data){
+                if(data.code == "200"){
+                    alert("사용할 수 있는 휴대폰 번호입니다.");
+                    $('#phone_message').text("사용할 수 있는 휴대폰 번호입니다.");
+                    phone_number_check = true; phone_check_str = $('#phone').val();
+                }else{
+                    alert("이미 등록된 휴대폰번호입니다.");
+                    $('#phone_message').text("이미 등록된 휴대폰번호입니다.");
+                    $('#phone').val('');
+                    phone_number_check = false; phone_check_str = "";
+                }
+            },
+            error : function(){
+                alert("에러가 발생했습니다.");
+                location.href = document.URL;
+            }
+        });
+    }
+</script>
+<%-- 고객 코드 생성 --%>
+<script>
+    /* 고객 고유번호 생성 */
+    $('input[type=radio][name=numberCreate]').change(function() {
+        if (this.value == '1') {
+            clientNumberCreateAuto();
+            $('#clientNumber').prop("readonly", true);
+        } else if(this.value == '2'){
+            $('#clientNumber').val("");
+            $('#clientNumber').prop("readonly", false);
+            $('#clientNumber').focus();
+        }
+        else if (this.value == '3') {
+            $('#clientNumber').val("");
+            $('#clientNumber').prop("readonly", false);
+            $('#clientNumber').focus();
+        }
+    });
+
+    /* 라디오 버튼 */
+    function clientNumberCreateAuto(){
+        $.ajax({
+            url : "/Client/clientCodeAuto.do",
+            type: "post",
+            dataType : "json",
+            success : function(data){
+                var clientNumber = "";
+                clientNumber = data.max;
+                if(clientNumber == "-1" || clientNumber == "0"){
+                    clientNumber = "1";
+                }
+                $('#clientNumber').val(clientNumber);
+            },
+            error : function(){
+                alert("에러가 발생했습니다.");$('#manual').trigger('click');
+                location.href = document.URL;
+            }
+        });
+    }
+
+    /* 고객 코드 반자동 */
+    $('#clientNumber').keyup(function(key){
+        var type = $('input[name="numberCreate"]:checked').val();
+        var this_str = $(this).val();
+        //console.log(type);
+        //console.log(this_str);
+
+        if(type == 2 && (key.keyCode == 13 || this_str.length == 1)){
+            var tmp = {
+                code : this_str.substr(0, 1)
+            };
+            var data = submitAjax("/Client/selectClientCodeSemiAuto.do", tmp);
+            //console.log(JSON.stringify(data));
+            if(data.code == 200){
+                $('#clientNumber').val(data.client_code);
+            } else if(data.code == 905){
+                return false;
+            }  else {
+                alert("잠시 후 다시 시도해 주세요.");
+            }
+        }
+    });
+</script>

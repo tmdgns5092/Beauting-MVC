@@ -1,0 +1,79 @@
+/*plugins {
+	id 'org.springframework.boot' version '2.3.0.BUILD-SNAPSHOT'
+	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'java'
+}*/
+plugins {
+	id 'org.springframework.boot' version '2.2.6.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'java'
+}
+
+group = 'kr.co'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+configurations {
+	developmentOnly
+	runtimeClasspath {
+		extendsFrom developmentOnly
+	}
+}
+
+repositories {
+	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
+}
+
+dependencies {
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.1.1'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web
+	compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.5.RELEASE'
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
+	compile group: 'org.springframework.boot', name: 'spring-boot-gradle-plugin', version: '2.2.5.RELEASE', ext: 'pom'
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent
+	compile group: 'org.springframework.boot', name: 'spring-boot-starter-parent', version: '2.2.4.RELEASE', ext: 'pom'
+	compile('org.apache.tomcat.embed:tomcat-embed-jasper')
+	compile('javax.servlet:jstl:1.2')
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-devtools
+	compile group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.2.5.RELEASE'
+	compile group: 'org.springframework', name: 'spring-jdbc', version:'4.3.4.RELEASE'
+	// mybatis
+	compile("org.springframework.boot:spring-boot-starter-jdbc:2.0.1.RELEASE")
+	compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version: '2.2.5.RELEASE'
+	compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.46'
+	compile("org.mybatis.spring.boot:mybatis-spring-boot-starter:1.3.1")
+	compile("org.mybatis:mybatis-spring:1.3.1")
+	compile("org.mybatis:mybatis:3.4.5")
+	// gson
+	compile group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
+	// gcm
+	compile group: 'us.raudi.pushraven', name: 'Pushraven', version: '1.0.2'
+	compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+	//jackson
+	compile group: 'org.codehaus.jackson', name: 'jackson-core-lgpl', version:'1.9.1'
+	compile group: 'org.codehaus.jackson', name: 'jackson-mapper-asl', version:'1.9.1'
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.8.5'
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version:'2.8.0'
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.8.5'
+	compile group: 'net.sf.json-lib', name: 'json-lib', version:'2.4', classifier:'jdk13'
+	// aspectj
+	compile group: 'org.aspectj', name: 'aspectjrt', version:'1.8.9'
+	compile group: 'org.aspectj', name: 'aspectjweaver', version:'1.8.9'
+	compile group: 'org.aspectj', name: 'aspectjtools', version:'1.8.9'
+    // logging
+	compile group: 'log4j', name: 'log4j', version: '1.2.17'
+	compile group: 'org.lazyluke', name: 'log4jdbc-remix', version:'0.2.7'
+	compile group: 'org.bgee.log4jdbc-log4j2', name: 'log4jdbc-log4j2-jdbc4.1', version: '1.16'
+	// Popbill SDK
+	compile group: 'kr.co.linkhub', name: 'popbill-sdk', version: '1.24.0'
+}
+
+test {
+	useJUnitPlatform()
+}

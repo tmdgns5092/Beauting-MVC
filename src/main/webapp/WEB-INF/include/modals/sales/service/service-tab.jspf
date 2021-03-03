@@ -1,0 +1,113 @@
+<%@ page pageEncoding="utf-8" %>
+<%-- 서비스 --%>
+<div class="box-body">
+    <div class="box-group" id="accordion">
+        <%-- 시술 --%>
+        <div class="panel box">
+            <div class="box-header">
+                <h4 class="box-title">시술 목록</h4>
+                <div class="box-tools">
+                    <button type="button" class="btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                </div>
+            </div>
+            <%@include file="../../sales/service/service.jspf" %>
+        </div>
+        <%-- /.시술 --%>
+
+        <c:if test="${client_type eq 'member'}">
+        <%-- 회원권 --%>
+        <div class="panel box">
+            <div class="box-header">
+                <h4 class="box-title">보유 회원권</h4>
+                <div class="box-tools">
+                    <button type="button" class="btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                </div>
+            </div>
+            <%@include file="../../sales/service/prepaid.jspf" %>
+        </div>
+        <%-- /.회원권 --%>
+        <%-- 횟수권--%>
+        <div class="panel box">
+            <div class="box-header">
+                <h4 class="box-title">보유 횟수권</h4>
+                <div class="box-tools">
+                    <button type="button" class="btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                </div>
+            </div>
+            <%@include file="../../sales/service/ticket.jspf" %>
+        </div>
+        </c:if>
+
+    </div>
+</div>
+<%-- /.서비스 --%>
+<%-- 서비스 판매 --%>
+<div class="box box-solid">
+    <div class="box-header">
+        <h4 class="box-title">결제형태</h4>
+    </div>
+    <div class="bottom-nav">
+        <%--현/카/상/기 입력 모달 --%>
+        <div class="bottom-nav-left">
+            <table class="pay-table02">
+                <tbody>
+                <tr>
+                    <th width="20%" data-toggle="modal" onclick="showPayMethod('money')"><p>현금</p></th>
+                    <th width="20%" data-toggle="modal" onclick="showPayMethod('card')"><p>카드</p></th>
+                    <th width="20%" data-toggle="modal" onclick="showPayMethod('other')"><p>기타</p></th>
+                    <th width="20%" data-toggle="modal" onclick="showPayMethod('gift')"><p>상품권</p></th>
+                    <th width="20%" data-toggle="modal" onclick="showPayMethod('point')"><p>포인트</p></th>
+                </tr>
+                </tbody>
+            </table>
+            <%--<textarea name="" id="" placeholder="메모를 입력해주세요."></textarea>--%>
+        </div>
+
+        <%-- 결과 출력 --%>
+        <div class="bottom-nav-right">
+            <table id="total-money-table">
+                <thead>
+                <tr>
+                    <th width="10%">금액합계</th>
+                    <th width="10%">현금</th>
+                    <th width="10%">카드</th>
+                    <th width="10%">상품권</th>
+                    <th width="10%">기타</th>
+                    <th width="10%">포인트</th>
+                    <th width="10%">미수금</th>
+                    <th width="30%">최종 결제금액*</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><p id="sale-main-total-cost">
+                        <c:choose>
+                            <c:when test="${not empty serviceFlag && rMap.type eq 0}"><fmt:formatNumber value="${rMap.service_cost}" pattern="#,###" /></c:when>
+                            <c:otherwise>0</c:otherwise>
+                        </c:choose>
+                    </p><span>원</span></td>
+                    <td><p id="sale-main-total-money">0</p><span>원</span></td>
+                    <td><p id="sale-main-total-card">0</p><span>원</span></td>
+                    <td><p id="sale-main-total-gift">0</p><span>원</span></td>
+                    <td><p id="sale-main-total-other">0</p><span>원</span></td>
+                    <td><p id="sale-main-total-point">0</p><span>원</span></td>
+                    <td><p id="sale-main-total-miss">
+                        <c:choose>
+                            <c:when test="${not empty serviceFlag && rMap.type eq 0}"><fmt:formatNumber value="${rMap.service_cost}" pattern="#,###" /></c:when>
+                            <c:otherwise>0</c:otherwise>
+                        </c:choose>
+                    </p><span>원</span></td>
+                    <td style="color: #fa5b4a;
+    font-weight: 500;
+    font-size: 20px;"><p id="sale-main-total-pay-cost"><c:choose>
+                        <c:when test="${not empty serviceFlag && rMap.type eq 0}"><fmt:formatNumber value="${rMap.service_cost}" pattern="#,###" /></c:when>
+                        <c:otherwise>0</c:otherwise>
+                    </c:choose>
+                    </p><span>원</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<%-- /.서비스 판매 --%>

@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="common">
+
+	<!-- 매장 로그인 체크 -->
+	<select id="loginCheckAjax" parameterType="hashmap" resultType="hashmap">
+			/* 원장 있을 때*/
+            /*SELECT A.idx, A.join_date, A.id, A.client_kind, A.client_rank, A.client_visit, A.manager_notice, A.lg_address,
+            A.sm_address, A.post, A.default_minute, A.shop_open, A.shop_close, A.manager_idx, A.com_num, A.ceo_name, A.com_name,
+            A.tel, A.state, A.business_conditions, A.msg_point, A.email, A.PCD_PAYER_ID*/
+            SELECT A.idx, A.join_date, A.id, A.client_kind, A.client_rank, A.client_visit, A.manager_notice, A.lg_address,
+            A.sm_address, A.post, A.default_minute, A.shop_open, A.shop_close, A.com_num, A.ceo_name, A.com_name,
+            A.tel, A.state, A.business_conditions, A.msg_point, A.email, A.PCD_PAYER_ID, A.service_type
+			FROM (
+				SELECT idx
+    			FROM shop
+    			WHERE id = #{id} AND password = #{password}
+			) B
+			JOIN shop A
+			ON B.idx = A.idx
+	</select>
+    <!-- 원장 이이디 중복 확인 -->
+    <select id="overlapCheckFromManager" parameterType="hashmap" resultType="hashmap">
+            SELECT A.idx
+			FROM (
+				SELECT idx
+    			FROM manager
+    			WHERE id = #{id}
+			) B
+			JOIN manager A
+			ON B.idx = A.idx
+	</select>
+	<!-- 원장 회원가입 -->
+	<insert id="insertManager" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+		INSERT INTO manager(name, id, password, phone, securityPassword)
+		VALUES (#{name}, #{id},#{password},#{phone}, #{securityPassword})
+	</insert>
+	<!-- 매장 아이디 중복 확인 -->
+	<select id="overlapShopCheckFromIdAjax" parameterType="hashmap" resultType="hashmap">
+            SELECT A.idx
+			FROM (
+				SELECT idx
+    			FROM shop
+    			WHERE id = #{id}
+			) B
+			JOIN shop A
+			ON B.idx = A.idx
+	</select>
+	<!-- 매장 추가 -->
+	<insert id="insertShop" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+		INSERT INTO shop (id, password, lg_address, sm_address, post, com_name, ceo_name, com_num, tel, business_item, business_conditions, email, service_type)
+		VALUES ( #{id}, #{password}, #{addresLg}, #{addresSm}, #{postCode}, #{comName}, #{ceoName}, #{comNum}, #{tel}, #{item}, #{bc}, '${email1}@${email2}', #{item_type})
+	</insert>
+
+	<insert id="insertChat" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+		INSERT INTO beautiful_talk (shop_idx, date, content, status)
+		VALUES ( #{idx}, now(), #{content}, #{status})
+	</insert>
+	<!-- 매장 뷰톡내역 -->
+	<select id="selectChat" parameterType="hashmap" resultType="hashmap">
+            SELECT A.idx, DATE_FORMAT(A.date,"%Y-%m-%d %H:%i") AS date, A.content, A.status
+			FROM (
+				SELECT idx
+    			FROM beautiful_talk
+    			WHERE shop_idx = #{idx} AND (DATE(date) = DATE(#{forDate}) OR status = 1)
+			) B
+			JOIN beautiful_talk A
+			ON B.idx = A.idx
+	</select>
+
+	<delete id="deleteChat">
+		DELETE FROM beautiful_talk WHERE idx = #{idx}
+	</delete>
+	<!-- create OOO_client -->
+	<insert id="createClient" parameterType="hashmap" useGeneratedKeys="true">
+			CREATE TABLE ${id}_client (
+  				idx INT NOT NULL AUTO_INCREMENT,
+  				code VARCHAR(30) NOT NULL,
+  				name VARCHAR(25) NOT NULL,
+  				phone VARCHAR(20) NULL,
+  				birth VARCHAR(10) NULL,
+  				kind VARCHAR(20) NULL,
+  				rank VARCHAR(20) NULL,
+  				visit VARCHAR(20) NULL,
+  				memo VARCHAR(500) NULL,
+  				last_visit_date DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+  				last_res_date DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+  				join_date DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+  				shop_idx INT NOT NULL,
+  				status INT NOT NULL DEFAULT 0,
+  				prepaid JSON NULL,
+  				ticket JSON NULL,
+				product JSON NULL,
+  				sms_check INT NULL DEFAULT 0,
+  				total_pay INT NULL DEFAULT 0,
+				client_price INT NULL DEFAULT 0,
+				noshow INT NULL DEFAULT 0,
+				miss_cost INT NULL DEFAULT 0,
+				point INT NULL DEFAULT 0,
+				first_membership VARCHAR(15) NULL,
+				status_membership INT DEFAULT 0,
+				visit_count INT DEFAULT 0,
+  			PRIMARY KEY (idx));
+	</insert>
+	<!-- create OOO_msg_history-->
+	<insert id="createMSGHistory" parameterType="hashmap" useGeneratedKeys="true">
+				CREATE TABLE ${id}_msg_history (
+					  idx int(11) NOT NULL AUTO_INCREMENT,
+					  date datetime DEFAULT CURRENT_TIMESTAMP,
+					  method int(11) DEFAULT NULL COMMENT '발송 유형 || 0: SMS, 1: LMS, 2: MMS, 3:XMS',
+					  target_count int(11) DEFAULT NULL COMMENT '총 발송량',
+					  receipt_num varchar(45) DEFAULT NULL,
+					  status int(2) DEFAULT '0' COMMENT '발송 위치 || 0 : 매장, 1 : 원장',
+					  p_status int(11) DEFAULT '0' COMMENT '0 : 미확인  1 : 확인  2 : 예약(대기중) 3 : 취소',
+					  send_type varchar(20) DEFAULT NULL COMMENT '문자 자동 발송 종류\n\n1: 전날알림\n2: 당일알림\n3: 시간대별 알림\n4: 예약등록 확인\n5: 예약취소 확인\n6: 포인트 적립\n7: 포인트 사용\n8: 선불권 적립\n9: 선불권 사용\n10: 선불권 만료\n11: 티켓 적립\n12: 티켓 사용\n13: 티켓 만료\n14 : 첫방문 고객\n15: 재방문 고객\n16: 생일',
+					  client_idx int(11) DEFAULT NULL,
+					  sale_idx int(11) DEFAULT NULL,
+					  res_idx int(11) DEFAULT NULL,
+					  content varchar(2048) DEFAULT NULL,
+					  success int(11) NOT NULL DEFAULT '0' COMMENT '성공 갯수',
+					  fail int(11) NOT NULL DEFAULT '0' COMMENT '실패 갯수',
+					  wait int(11) NOT NULL DEFAULT '0' COMMENT '대기중 갯수',
+					  receive_time datetime DEFAULT CURRENT_TIMESTAMP,
+					  PRIMARY KEY (idx)
+				);
+	</insert>
+	<!-- create OOO_reservation -->
+	<insert id="createReservation" parameterType="hashmap" useGeneratedKeys="true">
+			CREATE TABLE ${id}_reservation (
+	  			idx INT NOT NULL AUTO_INCREMENT,
+	  			work_time VARCHAR(10) NULL,
+  				date DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+  				status INT NOT NULL DEFAULT 1,
+  				memo VARCHAR(500) DEFAULT NULL,
+  				shop_idx INT NOT NULL,
+	  			services_idx INT DEFAULT NULL,
+  				client_idx INT DEFAULT NULL,
+  				employee_idx INT DEFAULT NULL,
+  				end_time VARCHAR(10) DEFAULT NULL,
+  				type INT NOT NULL,
+  				un_name VARCHAR(10) DEFAULT NULL,
+  				un_phone VARCHAR (20) DEFAULT NULL,
+  				icons VARCHAR(10) DEFAULT NULL,
+  				sms_check INT NULL DEFAULT 0,
+  				color VARCHAR(10) DEFAULT NULL,
+  			PRIMARY KEY (idx));
+	</insert>
+	<!-- create OOO_sales-->
+	<insert id="createSales" parameterType="hashmap" useGeneratedKeys="true">
+			CREATE TABLE ${id}_sales (
+	  			idx INT NOT NULL AUTO_INCREMENT,
+	  			shop_idx INT NOT NULL,
+	  			client_idx INT NULL,
+	  			date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  				memo VARCHAR(500) NULL,
+  				services_type INT NULL DEFAULT 0,
+  				total_money INT NULL DEFAULT 0,
+  				total_card INT NULL DEFAULT 0,
+  				total_cost INT NULL DEFAULT 0,
+  				total_exhaust INT NULL DEFAULT 0,
+  				total_point INT NULL DEFAULT 0,
+  				total_miss_cost INT NULL DEFAULT 0,
+  				total_gift_cost INT NULL DEFAULT 0,
+  				total_other_cost INT NULL DEFAULT 0,
+  				store_point INT NULL DEFAULT 0,
+  				status INT NOT NULL DEFAULT 0,
+  				sale_resource JSON NOT NULL,
+  				accumulate INT NULL,
+  				use_ticket JSON NULL,
+  				use_prepaid JSON NULL,
+  				res_idx INT NULL,
+  				refund_name VARCHAR(45) NULL,
+  				refund_cost INT NULL,
+  				refund_target INT NULL,
+				refund_status INT NULL,
+  				validity_date DATETIME NULL,
+  			PRIMARY KEY (idx));
+	</insert>
+	<!-- create OOO_schedule -->
+	<insert id="createSchedule" parameterType="hashmap" useGeneratedKeys="true">
+			CREATE TABLE ${id}_schedule (
+	  			idx INT NOT NULL AUTO_INCREMENT,
+	  			shop_idx INT NOT NULL,
+  				date DATETIME NULL,
+  				work_part VARCHAR(45) NULL,
+  				work_start VARCHAR(45) NULL,
+  				work_end VARCHAR(45) NULL,
+	  			employee_idx INT NULL,
+  				employee_name VARCHAR(45) NULL,
+  				useYN INT NULL DEFAULT 0,
+  				block_status INT NOT NULL DEFAULT 1,
+  			PRIMARY KEY (idx));
+	</insert>
+	<!-- create OOO_call_history -->
+	<insert id="createCallHistory" parameterType="hashmap" useGeneratedKeys="true">
+			CREATE TABLE ${id}_call_history (
+	  			idx INT NOT NULL AUTO_INCREMENT,
+	  			date DATETIME DEFAULT NULL,
+	  			event_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	  			status INT NOT NULL,
+	  			tel VARCHAR(45) NOT NULL,
+	  			client_code VARCHAR(45) DEFAULT 0,
+	  			client_idx INT DEFAULT 0,
+  			PRIMARY KEY (idx));
+	</insert>
+	<!-- default service list insert -->
+	<!--카테고리 손 추가-->
+	<insert id="insertDefaultServiceCategory1" parameterType="hashmap" useGeneratedKeys="true">
+		INSERT INTO services(type, category, shop_idx, resource, procedure_int)
+		VALUES (0, '손', ${shop_idx}, '{"color": "#FFDAB9"}', 1)
+	</insert>
+	<!--카테고리 발 추가-->
+	<insert id="insertDefaultServiceCategory2" parameterType="hashmap" useGeneratedKeys="true">
+		INSERT INTO services(type, category, shop_idx, resource, procedure_int)
+        VALUES (0,'발',${shop_idx},'{"color": "#96CEEC"}', 2)
+	</insert>
+	<!--카테고리 추가 추가-->
+	<insert id="insertDefaultServiceCategory3" parameterType="hashmap" useGeneratedKeys="true">
+		INSERT INTO services(type, category, shop_idx, resource, procedure_int)
+		VALUES (0,'추가',${shop_idx},'{"color": "#B0E0E6"}', 3)
+	</insert>
+
+	<!-- 손 카테고리  디테일 -->
+	<insert id="insertDefaultServiceDetail1-1" parameterType="hashmap" useGeneratedKeys="true">
+		INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+        VALUES (0, '기본', '손', 12000, ${shop_idx}, '{"time": "00:30"}', 1)
+    </insert>
+	<insert id="insertDefaultServiceDetail1-2" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+        VALUES (0, '기본(남)', '손', 20000, ${shop_idx}, '{"time": "00:30"}', 2)
+    </insert>
+	<insert id="insertDefaultServiceDetail1-3" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+        VALUES (0, '젤', '손', 40000, ${shop_idx}, '{"time": "01:00"}', 3)
+    </insert>
+	<insert id="insertDefaultServiceDetail1-4" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+        VALUES (0, '젤프렌치', '손', 50000, ${shop_idx}, '{"time": "01:30"}', 4)
+    </insert>
+	<insert id="insertDefaultServiceDetail1-5" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+        VALUES (0, '젤그라', '손', 50000, ${shop_idx}, '{"time": "01:30"}', 5)
+    </insert>
+
+	<!-- 발 카테고리  디테일 -->
+	<insert id="insertDefaultServiceDetail2-1" parameterType="hashmap" useGeneratedKeys="true">
+		INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '기본', '발', 20000, ${shop_idx}, '{"time": "00:30"}', 1)
+    </insert>
+	<insert id="insertDefaultServiceDetail2-2" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '젤', '발', 60000, ${shop_idx}, '{"time": "01:00"}', 2)
+    </insert>
+	<insert id="insertDefaultServiceDetail2-3" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '젤프렌치', '발', 70000, ${shop_idx}, '{"time": "01:30"}', 3)
+    </insert>
+	<insert id="insertDefaultServiceDetail2-4" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '젤그라', '발', 70000, ${shop_idx}, '{"time": "01:30"}', 4)
+    </insert>
+	<insert id="insertDefaultServiceDetail2-5" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '각질', '발', 40000, ${shop_idx}, '{"time": "01:00"}', 5)
+    </insert>
+
+	<!-- 추가 카테고리  디테일 -->
+	<insert id="insertDefaultServiceDetail3-1" parameterType="hashmap" useGeneratedKeys="true">
+		INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '젤제거', '추가', 10000, ${shop_idx}, '{"time": "00:30"}', 1)
+    </insert>
+	<insert id="insertDefaultServiceDetail3-2" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '젤제거(타샵)', '추가', 20000, ${shop_idx}, '{"time": "00:30"}', 2)
+    </insert>
+	<insert id="insertDefaultServiceDetail3-3" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '컬러추가', '추가', 5000, ${shop_idx}, '{"time": "00:10"}', 3)
+    </insert>
+	<insert id="insertDefaultServiceDetail3-4" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '글리터추가', '추가', 10000, ${shop_idx}, '{"time": "00:30"}', 4)
+    </insert>
+	<insert id="insertDefaultServiceDetail3-5" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '랩핑', '추가', 10000, ${shop_idx}, '{"time": "00:30"}', 5)
+    </insert>
+	<insert id="insertDefaultServiceDetail3-6" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '아트', '추가', 0, ${shop_idx}, '{"time": "00:10"}', 6)
+    </insert>
+	<insert id="insertDefaultServiceDetail3-7" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '풀스와(손)', '추가', 20000, ${shop_idx}, '{"time": "00:30"}', 7)
+    </insert>
+	<insert id="insertDefaultServiceDetail3-8" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '풀스와(발)', '추가', 30000, ${shop_idx}, '{"time": "00:30"}', 8)
+    </insert>
+	<insert id="insertDefaultServiceDetail3-9" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+         VALUES (0, '연장', '추가', 5000, ${shop_idx}, '{"time": "00:10"}', 9)
+    </insert>
+
+	<!-- 카테고리 추가 커스텀 -->
+	<insert id="insertDefaultCateCustom" parameterType="hashmap" useGeneratedKeys="true">
+		INSERT INTO services(type, category, shop_idx, resource, procedure_int)
+		VALUES (0, #{cate_category}, ${shop_idx}, #{resource}, ${p_int})
+    </insert>
+	<!-- 디테일 추가 커스텀 -->
+	<insert id="insertDefaultDetailCustom" parameterType="hashmap" useGeneratedKeys="true">
+        INSERT INTO services(type, name, category, cost, shop_idx, resource, procedure_int)
+        VALUES (0, #{detail_name}, #{detail_category}, ${cost}, ${shop_idx}, #{resource}, ${p_int})
+    </insert>
+
+
+	<!-- 서비스 순서 업데이트 -->
+	<insert id="updateServiceProcedureUpdate" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE services
+        SET procedure_int = ${ID}
+        WHERE idx = ${ID}
+    </insert>
+
+	<!-- 사업자 번호 중복 확인 -->
+	<select id="selectComNumberOverCheckFromManager" parameterType="hashmap" resultType="hashmap">
+			SELECT idx
+			FROM shop
+			WHERE EXISTS (SELECT id FROM shop)
+			AND manager_idx = ${managerIdx}
+    		AND com_num = #{comNum}
+	</select>
+	<!-- 매장 오픈 -->
+	<update id="updateShopOpen" parameterType="hashmap" useGeneratedKeys="true">
+		UPDATE shop
+		SET state = 0
+		WHERE idx = #{idx}
+	</update>
+	<!-- 매장 마감 -->
+	<update id="updateShopClose" parameterType="hashmap" useGeneratedKeys="true">
+		UPDATE shop
+		SET state = 1
+		WHERE idx = #{idx}
+	</update>
+	<!-- 매장 분단위 설정-->
+	<update id="updateShopDefaultMinute" parameterType="hashmap" useGeneratedKeys="true">
+		UPDATE shop
+		SET default_minute = ${minute}
+		WHERE idx = #{idx}
+	</update>
+	<!-- 모든 스케쥴 미사용 업데이트 -->
+	<update id="updateEmployeeAllSchedule" parameterType="hashmap" useGeneratedKeys="true">
+		UPDATE ${id}_schedule
+		SET block_status = 0
+		WHERE date <![CDATA[ < ]]> #{this_date}
+	</update>
+	<!-- 오늘 이후 스케쥴 모두 삭제 (중복 방지) -->
+	<delete id="deleteEmployeeAllSchedule" parameterType="hashmap">
+		DELETE FROM ${id}_schedule
+		WHERE date <![CDATA[ >= ]]> #{this_date}
+	</delete>
+	<!-- 매장 운영시간 업데이트 -->
+	<update id="updateOperationgTime" parameterType="hashmap" useGeneratedKeys="true">
+		UPDATE shop
+		SET shop_open = #{start}, shop_close = #{close}
+		WHERE idx = #{idx}
+	</update>
+	<!-- 사업자 등록번호 업데이트 -->
+	<update id="updateComNum" parameterType="hashmap" useGeneratedKeys="true">
+		UPDATE shop
+		SET com_num = #{comNum}, email = '${cortactEmail1}@${cortactEmail2}', tel = ${cortactTel}
+		WHERE idx = #{idx}
+	</update>
+	<!-- 사업자번호 중복 허용 체크 -->
+	<select id="selectOverlapComnumCheck" parameterType="hashmap" resultType="hashmap">
+		SELECT *
+		FROM shop
+		WHERE
+			manager_idx = ${manager_idx} and
+			idx <![CDATA[<>]]> ${idx} and
+			com_num = #{comNum}
+	</select>
+	<!-- 발신자 등록으로 인한 매장 데이터 업데이트 -->
+	<update id="updateShopDataFromSender" parameterType="hashmap" useGeneratedKeys="true">
+		UPDATE shop
+		SET com_num = #{comNum}, email = '${cortactEmail1}@${cortactEmail2}'
+		WHERE idx = ${idx}
+	</update>
+	<!-- 고객정보 조회 -->
+	<select id="selectClientInfo" parameterType="hashmap" resultType="hashmap">
+		SELECT a.idx, a.name, a.noshow, a.code, a.rank, a.memo, DATE_FORMAT(a.join_date, '%Y.%m.%d') AS join_date, a.prepaid, a.ticket, a.product,
+				d.name AS service_name, DATE_FORMAT(b.date, '%Y.%m.%d') AS sale_date, JSON_LENGTH(b.sale_resource) AS sale_length
+        FROM ${id}_client a
+        LEFT JOIN (
+			SELECT * FROM ${id}_sales
+            WHERE res_idx IS NOT NULL
+            ORDER BY date DESC
+            LIMIT 1
+        ) b
+        ON a.idx = b.client_idx
+        LEFT JOIN ${id}_reservation c
+        ON b.res_idx = c.idx
+        LEFT JOIN services d
+        ON c.services_idx = d.idx
+        WHERE a.phone = #{phoneNum}
+        ORDER BY a.idx DESC
+        LIMIT 1
+	</select>
+    <!-- 수신내역 추가 부재중 까지 판별 버전-->
+	<!--<insert id="insertCallHistory" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+		INSERT INTO ${shop_id}_call_history (date, status, tel, client_code, client_idx)
+		VALUES(#{org_time}, now(), #{status}, #{phone}, #{client_code}, #{client_idx});
+	</insert>-->
+	<!-- 수신내역 추가 -->
+	<insert id="insertCallHistory" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+		INSERT INTO ${shop_id}_call_history (date, status, tel, client_code, client_idx)
+		VALUES(now(), #{status}, #{phone}, #{client_code}, #{client_idx});
+	</insert>
+    <!-- 전화 수신내역 토탈 카운트 -->
+	<select id="selectCallHistoryCount" parameterType="hashmap" resultType="hashmap">
+		SELECT COUNT(*) AS count
+		FROM ${id}_call_history A
+		LEFT JOIN ${id}_client B
+		ON A.client_idx = B.idx
+		WHERE DATE(#{startDate}) <![CDATA[ <= ]]> DATE(A.date) AND DATE(A.date) <![CDATA[ <= ]]> DATE(#{endDate})
+		<choose>
+			<when test="status.equals('2')"></when>
+			<when test="status == 2"></when>
+			<when test="status eq 2"></when>
+			<otherwise> AND A.status = #{status} </otherwise>
+		</choose>
+		<choose>
+			<when test="search_type.equals('all')">
+				AND (
+				A.client_code like '%${search_value}%' OR
+				A.tel like '%${search_value}%' OR
+				B.name like '%${search_value}%'
+				)
+			</when>
+			<when test="search_type.equals('cd')">
+				AND A.client_code = #{search_value}
+			</when>
+			<when test="search_type.equals('ph')">
+				AND A.tel = #{search_value}
+			</when>
+			<when test="search_type.equals('nm')">
+				AND B.name = #{search_value}
+			</when>
+			<when test="search_type.equals('st')">
+				AND A.status = #{search_value}
+			</when>
+			<otherwise></otherwise>
+		</choose>
+	</select>
+    <!-- 전화 수신내역 리스트 페이징 -->
+	<select id="selectCallHistoryList" parameterType="hashmap" resultType="hashmap">
+		SELECT A.idx, DATE_FORMAT(A.date, '%Y-%m-%d %H:%i:%s') AS date, A.status, B.name, A.client_code, A.tel, A.client_idx, B.sms_check
+		FROM ${id}_call_history A
+		LEFT JOIN ${id}_client B
+		ON A.client_idx = B.idx
+		WHERE DATE(#{startDate}) <![CDATA[ <= ]]> DATE(A.date) AND DATE(A.date) <![CDATA[ <= ]]> DATE(#{endDate})
+		<choose>
+			<when test="status.equals('2')"></when>
+			<when test="status == 2"></when>
+			<when test="status eq 2"></when>
+			<otherwise> AND A.status = #{status} </otherwise>
+		</choose>
+		<choose>
+			<when test="search_type.equals('cd')">
+				AND A.client_code = #{search_value}
+			</when>
+			<when test="search_type.equals('ph')">
+				AND A.tel = #{search_value}
+			</when>
+			<when test="search_type.equals('nm')">
+				AND B.name = #{search_value}
+			</when>
+			<when test="search_type.equals('st')">
+				AND A.status = #{search_value}
+			</when>
+			<otherwise></otherwise>
+		</choose>
+		ORDER BY A.date DESC
+		LIMIT #{start_idx}, #{end_idx}
+	</select>
+    <!-- 전화수신내역 고객 수정 -->
+    <update id="updateClientState" parameterType="hashmap" useGeneratedKeys="true">
+		UPDATE ${id}_call_history
+		SET client_idx = #{client_idx}, client_code = #{client_code}
+		WHERE tel = #{tel}
+	</update>
+	<!-- 포인트 충전 -->
+	<update id="updateMsgPoint" parameterType="hashmap" useGeneratedKeys="true">
+		UPDATE shop
+		SET msg_point = msg_point + #{PCD_PAY_TOTAL}
+		WHERE idx = #{idx}
+	</update>
+	<!-- PAYPLE DATA INSERT -->
+	<update id="insertPayment" parameterType="hashmap" useGeneratedKeys="true">
+		INSERT INTO messagePayment(PAY_RST, PAY_OID, PAY_WORK, PAYER_NO, PAYER_EMAIL, PAY_TOTAL, TAXSAVE_RST)
+		VALUES(#{PCD_PAY_RST}, #{PCD_PAY_OID}, #{PCD_PAY_WORK}, #{PCD_PAYER_NO}, #{PCD_PAYER_EMAIL}, #{PCD_PAY_TOTAL}, #{PCD_TAXSAVE_RST})
+	</update>
+	<!-- PAY_PAYER_ID Update -->
+	<update id="insertPayer_ID" parameterType="hashmap" useGeneratedKeys="true">
+		UPDATE shop
+		SET PCD_PAYER_ID = #{PCD_PAYER_ID}
+		WHERE idx = #{idx}
+	</update>
+	<!-- PAY_PAYER_ID Update -->
+	<update id="deletePayer_ID" parameterType="hashmap" useGeneratedKeys="true">
+		UPDATE shop
+		SET PCD_PAYER_ID = NULL
+		WHERE idx = #{idx}
+	</update>
+
+	<select id="selectShopInfo" parameterType="hashmap" resultType="hashmap">
+		SELECT *
+		FROM BeautyingNail.shop
+		WHERE idx = ${idx}
+	</select>
+
+	<!-- MOBILE -->
+	<select id="selectReservation" parameterType="hashmap" resultType="hashmap">
+		SELECT
+		A.idx,
+		A.client_idx,
+		A.employee_idx,
+		A.services_idx,
+		A.type,
+		A.un_name,
+		A.un_phone,
+		A.status,
+		A.icons,
+		DATE_FORMAT(A.date, "%H:%i") as original_time,
+		IFNULL(A.color, '#1C2745') AS color,
+		B.resource,
+		B.name AS service_name,
+		C.name AS client_name,
+		C.code AS client_code,
+		<choose>
+			<when test="default_minute == '10'">
+				(CASE
+				WHEN DATE_FORMAT(A.date, "%i") = 00 THEN DATE_FORMAT(A.date, "%H:00")
+				WHEN DATE_FORMAT(A.date, "%i") = 15 THEN DATE_FORMAT(A.date, "%H:10")
+				WHEN DATE_FORMAT(A.date, "%i") = 30 THEN DATE_FORMAT(A.date, "%H:30")
+				WHEN DATE_FORMAT(A.date, "%i") = 45 THEN DATE_FORMAT(A.date, "%H:40")
+				WHEN DATE_FORMAT(A.date, "%i") = 60 THEN DATE_FORMAT(A.date, "%H:60")
+				ELSE DATE_FORMAT(A.date, "%H:%i")
+				END) AS time,
+				(CASE
+				WHEN RIGHT(A.end_time, 2) >= 00 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   10 AND SUBSTRING_INDEX(A.end_time,":",1) >= 10 THEN CONCAT(LEFT(A.end_time, 2),":", "00")
+				WHEN RIGHT(A.end_time, 2) >= 00 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   10 AND SUBSTRING_INDEX(A.end_time,":",1) <![CDATA[ < ]]> 10 THEN CONCAT(LEFT(A.end_time, 1),":", "00")
+				WHEN RIGHT(A.end_time, 2) >= 10 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   20 AND SUBSTRING_INDEX(A.end_time,":",1) >= 10 THEN CONCAT(LEFT(A.end_time, 2),":", "10")
+				WHEN RIGHT(A.end_time, 2) >= 10 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   20 AND SUBSTRING_INDEX(A.end_time,":",1) <![CDATA[ < ]]> 10 THEN CONCAT(LEFT(A.end_time, 1),":", "10")
+				WHEN RIGHT(A.end_time, 2) >= 20 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   30 AND SUBSTRING_INDEX(A.end_time,":",1) >= 10 THEN CONCAT(LEFT(A.end_time, 2),":", "20")
+				WHEN RIGHT(A.end_time, 2) >= 20 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   30 AND SUBSTRING_INDEX(A.end_time,":",1) <![CDATA[ < ]]> 10 THEN CONCAT(LEFT(A.end_time, 1),":", "20")
+				WHEN RIGHT(A.end_time, 2) >= 30 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   40 AND SUBSTRING_INDEX(A.end_time,":",1) >= 10 THEN CONCAT(LEFT(A.end_time, 2),":", "30")
+				WHEN RIGHT(A.end_time, 2) >= 30 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   40 AND SUBSTRING_INDEX(A.end_time,":",1) <![CDATA[ < ]]> 10 THEN CONCAT(LEFT(A.end_time, 1),":", "30")
+				WHEN RIGHT(A.end_time, 2) >= 40 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   50 AND SUBSTRING_INDEX(A.end_time,":",1) >= 10 THEN CONCAT(LEFT(A.end_time, 2),":", "40")
+				WHEN RIGHT(A.end_time, 2) >= 40 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   50 AND SUBSTRING_INDEX(A.end_time,":",1) <![CDATA[ < ]]> 10 THEN CONCAT(LEFT(A.end_time, 1),":", "40")
+				WHEN RIGHT(A.end_time, 2) >= 50 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   60 AND SUBSTRING_INDEX(A.end_time,":",1) >= 10 THEN CONCAT(LEFT(A.end_time, 2),":", "50")
+				WHEN RIGHT(A.end_time, 2) >= 50 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   60 AND SUBSTRING_INDEX(A.end_time,":",1) <![CDATA[ < ]]> 10 THEN CONCAT(LEFT(A.end_time, 1),":", "50")
+				ELSE CONCAT(IF(SUBSTRING_INDEX(A.end_time,":",1) >= 10 , LEFT(A.end_time, 2), LEFT(A.end_time, 1)), ":00")
+				END) AS end_time
+			</when>
+			<otherwise>
+				(CASE
+				WHEN DATE_FORMAT(A.date, "%i") = 00 OR DATE_FORMAT(A.date, "%i") = 10 THEN DATE_FORMAT(A.date, "%H:00")
+				WHEN DATE_FORMAT(A.date, "%i") = 20 THEN DATE_FORMAT(A.date, "%H:15")
+				WHEN DATE_FORMAT(A.date, "%i") = 30 OR DATE_FORMAT(A.date, "%i") = 40 THEN DATE_FORMAT(A.date, "%H:30")
+				WHEN DATE_FORMAT(A.date, "%i") = 50 THEN DATE_FORMAT(A.date, "%H:45")
+				WHEN DATE_FORMAT(A.date, "%i") = 60 THEN DATE_FORMAT(A.date, "%H:60")
+				ELSE DATE_FORMAT(A.date, "%H:%i")
+				END) AS time,
+				(CASE
+				WHEN RIGHT(A.end_time, 2) > 00 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   15 AND SUBSTRING_INDEX(A.end_time,":",1) >= 10 THEN CONCAT(LEFT(A.end_time, 2),":", "00")
+				WHEN RIGHT(A.end_time, 2) > 00 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   15 AND SUBSTRING_INDEX(A.end_time,":",1) <![CDATA[ < ]]> 10 THEN CONCAT(LEFT(A.end_time, 1),":", "00")
+				WHEN RIGHT(A.end_time, 2) >= 15 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   30 AND SUBSTRING_INDEX(A.end_time,":",1) >= 10 THEN CONCAT(LEFT(A.end_time, 2),":", "15")
+				WHEN RIGHT(A.end_time, 2) >= 15 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   30 AND SUBSTRING_INDEX(A.end_time,":",1) <![CDATA[ < ]]> 10 THEN CONCAT(LEFT(A.end_time, 1),":", "15")
+				WHEN RIGHT(A.end_time, 2) >= 30 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   45 AND SUBSTRING_INDEX(A.end_time,":",1) >= 10 THEN CONCAT(LEFT(A.end_time, 2),":", "30")
+				WHEN RIGHT(A.end_time, 2) >= 30 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   45 AND SUBSTRING_INDEX(A.end_time,":",1) <![CDATA[ < ]]> 10 THEN CONCAT(LEFT(A.end_time, 1),":", "30")
+				WHEN RIGHT(A.end_time, 2) >= 45 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   60 AND SUBSTRING_INDEX(A.end_time,":",1) >= 10 THEN CONCAT(LEFT(A.end_time, 2),":", "45")
+				WHEN RIGHT(A.end_time, 2) >= 45 AND RIGHT(A.end_time, 2)   <![CDATA[ < ]]>   60 AND SUBSTRING_INDEX(A.end_time,":",1) <![CDATA[ < ]]> 10 THEN CONCAT(LEFT(A.end_time, 1),":", "45")
+				ELSE CONCAT(IF(SUBSTRING_INDEX(A.end_time,":",1) >= 10, LEFT(A.end_time, 2), LEFT(A.end_time, 1)) , ":00")
+				END) AS end_time
+			</otherwise>
+		</choose>
+		FROM (SELECT * FROM ${id}_reservation) A
+		INNER JOIN services B
+		ON A.services_idx = B.idx AND B.useYN = 1
+		LEFT JOIN ${id}_client C
+		ON A.client_idx = C.idx
+		WHERE A.shop_idx = #{idx} AND date(A.date) = date(#{date}) AND A.status > 0 AND A.employee_idx = ${emplIdx}
+	</select>
+</mapper>

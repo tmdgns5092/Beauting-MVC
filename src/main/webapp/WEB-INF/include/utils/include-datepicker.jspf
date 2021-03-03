@@ -1,0 +1,26 @@
+<%@ page pageEncoding="utf-8" %>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" type="text/css" />
+<script>
+    $(function() {
+        $('#message-reserveDT').datepicker(datepickerObject());
+        $("#client_joinDatePicker").datepicker(datepickerObject());
+        $("#emp_joinDatePicker").datepicker(datepickerObject());
+        $('#reservationDataPicker').datepicker(datepickerObject());
+        $('#reservation2_date').datepicker(datepickerObject());
+        $('#res_for_date').datepicker(datepickerObject());
+        $('#sales_date').datepicker(datepickerObject());
+        $("#forDate").datepicker(datepickerObject()).on("change", function(){
+            var form = document.createElement("form");
+            $(form).attr("action", "/Reservation/calendar").attr("method", "post");
+            $(form).html('<input type="hidden" name="forDate" value="'+$(this).val()+'" />');
+            document.body.appendChild(form);
+            $(form).submit();
+            document.body.removeChild(form);
+        });
+        $("#dp").datepicker(datepickerObject());
+
+        $("#datep").click(function() {
+            $("#dp").datepicker("show");
+        });
+    });
+</script>

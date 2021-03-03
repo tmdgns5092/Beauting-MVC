@@ -1,0 +1,912 @@
+<%@ page pageEncoding="utf-8" %>
+<%--
+    검색 영역
+        [1] 예약 모달 1
+        [2] 예약 모달 1 SCRIPT
+        [3] 예약 모달 2
+        [4] 예약 모달 2 SCRIPT
+--%>
+
+<%-- reservation 1 modal --%>
+<%--<a data-toggle="modal" href="${pageContext.request.contextPath}/Reservation/reservation1.do" data-target="#rservationModal01" role="button" data-backdrop="static" id="res_modal1" style="display: none;">
+    <span class="btn btn-xs btn-success">테스트 등록1</span>
+</a>
+<div id="rservationModal01" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="테스트정보 등록" aria-describedby="테스트 모달">
+    <div class="modal-dialog">
+        <div class="modal-content reservation-modal">
+        </div>
+    </div>
+</div>--%>
+<%-- ================================= [1]예약 모달 1 =================================--%>
+<div class="modal fade" id="reservation-step1" tabindex="-1" role="dialog" aria-labelledby="reservation-step1" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="width: 509px">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">예약 등록</h4>
+            </div>
+
+            <div class="modal-body">
+                <%--<button class="close-btn02" id="close" onclick="modalTestClost()"><i class="fas fa-times"></i></button>--%>
+                <input type="hidden" id="res-toss">
+                <input type="hidden" id="res-hour">
+                <input type="hidden" id="res-minute">
+                <ul class="reservation-tabs nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#sun-hun-user-data" aria-controls="user-data" role="tab" data-toggle="tab" id="client_tab">기존 고객</a></li>
+                    <li role="presentation"><a href="#sun-hun-user-price" aria-controls="user-price" role="tab" data-toggle="tab" id="un_client_tab">미등록 고객</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!--기존 고객-->
+                    <div role="tabpanel" class="tab-pane active" id="sun-hun-user-data">
+                        <div class="reservation-serch">
+                            <select id="serch_type" name="sort">
+                                <option value="all_serch" selected>전체검색</option>
+                                <option value="code_serch">고객번호</option>
+                                <option value="name_serch">고객이름</option>
+                                <option value="phone_serch">휴대폰</option>
+                            </select>
+
+                            <%--검색영역--%>
+                            <input class="reservation-input" type="text" id="serch_data" name="data">
+                            <%--버튼--%>
+                            <button class="reservation-btn" type="button" onclick="res_client_serch()">검색</button>
+                        </div>
+                        <table class="reservation-table">
+                            <thead>
+                            <tr>
+                                <th style="width: 46px !important;text-align: center">-</th>
+                                <th width="86">이름</th>
+                                <th width="125">연락처</th>
+                                <th class="m-none" width="127">잔액</th>
+                                <th class="m-none" width="127">객단가</th>
+                                <th class="m-none" width="56" style="color: #fa5b4a;">노쇼</th>
+                            </tr>
+                            </thead>
+                        </table>
+                        <div class="reservation-table-div">
+                            <table class="reservation-table" width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tbody id="clients_body">
+                                    <tr class="client_select">
+                                        <td width="46">
+                                            <input type="radio" id="r1" name="customRadio" class="" value="${client_list.idx}">
+                                            <label for="r1"><em></em></label>
+                                        </td>
+                                        <td  width="86" name="client-name">${client_list.name}</td>
+                                        <td width="125" name="client-phone">${client_list.phone}</td>
+                                        <td class="m-none" width="127">${client_list.prepaid}</td>
+                                        <td class="m-none"  width="127">${client_list.client_price}</td>
+                                        <td class="m-none"  width="56">${client_list.client_price}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <%-- 페이징 버튼 --%>
+                        <div class="page-nav">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination" id="paging_ul">
+                                    <li>
+                                        <a href="#" aria-label="Previous" data-value="${paging.prevPageNo}" class="paging_btn">
+                                            <span aria-hidden="true"><i class="fas fa-angle-left"></i></span>
+                                        </a>
+                                    </li>
+                                    <li class="active">
+                                        <a href="#" data-value="${i}" class="paging_btn">
+                                            ${i}<span class="sr-only">(current)</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" aria-label="Next" data-value="${paging.nextPageNo}" class="paging_btn">
+                                            <span aria-hidden="true"><i class="fas fa-angle-right"></i></span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                        <%-- /. 페이징 버튼 --%>
+                    </div>
+                    <!--미등록 고객-->
+                    <div role="tabpanel" class="tab-pane" id="sun-hun-user-price">
+                        <table class="none-user-table">
+                            <tr>
+                                <th width="20%">이름</th>
+                                <td>
+                                    <input type="text" placeholder="이름을 입력해주세요." id="un_client_name" maxlength="10" oninput="maxLengthCheck(this)">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>연락처</th>
+                                <td>
+                                    <input type="text" placeholder="연락처를 입력해주세요." id="un_client_phone" maxlength="18"
+                                           oninput="maxLengthCheck(this)" onkeydown="onlyTel(this)" onfocus="OnCheckPhone(this, event)" onkeyup="OnCheckPhone(this, event)">
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                    <div class="modal-footer" style="text-align: center">
+                        <button type="button" class="btn btn-primary" onclick="next_step()" style="background-color: rgb(255,223,44);color: rgba(0,0,0,0.8);width: 162px;border-radius: 2px;height: 42px;font-weight: 600;border: 1px solid #ffc200;">다음</button>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+<%-- ================================= /. 예약 모달 1 =================================--%>
+
+<%-- ================================= [2]예약 모달 1 SCRIPT =================================--%>
+<script>
+    var client_phone = '';
+    var client_name = '';
+    $('#serch_data').keydown(function(key){
+        if (key.keyCode == 13) {
+            res_client_serch();
+        }
+    });
+    $(document).on('click', '.client_select', function(){
+        $(this).find('input[name=customRadio]').prop('checked',true);
+
+        client_phone = $(this).find('td[name=client-phone]').text();
+        client_name = $(this).find('td[name=client-name]').text();
+    });
+</script>
+<script>
+    /* 예약 모달 고객 리스트 불러오기 */
+    function callReservationStep1Content(){
+        var data_code = 0;
+        var function_data;
+        var r_code = $('#call_result_code').val();
+        var r_data = $('#call_res_data').val();
+        var data = {
+            "times" : times,
+            "forDate" : $('#forDate').val()
+        };
+
+        if(r_code == 200){
+            data["type"] = "code_serch";
+            data["data"] = r_data;
+            $('#serch_data').val(r_data);
+            $('#serch_type').val('code_serch');
+            $('#serch_type').niceSelect('update');
+        } else if(r_code == 902) {
+            var length = r_data.length;
+            var phone = r_data.substring(0, 3) + '-' + r_data.substring(3, length-4) + '-' + r_data.substring(length-4, length);
+            $('#un_client_phone').val(phone);
+            $('#un_client_tab').click();
+        }
+
+        $.ajax({
+            url: "/Reservation/reservation1",
+            type: "post",
+            dataType: "json",
+            data: data,
+            async : false,
+            success: function (data) {
+                function_data = data;
+                data_code = data.code;
+            },
+            error: function () {
+                alert("에러가 발생했습니다.");
+                form_submit('/Reservation/calendar', {forDate : $('#forDate').val()}, 'post');
+            }
+        });
+
+        if(data_code == 200){
+            var res_date = function_data.times;
+            res_date = res_date.split(":");
+            $('#res-hour').val(parseInt(res_date[0]));
+            $('#res-minute').val(parseInt(res_date[1]));
+
+            $('#res-toss').val(function_data.res_date);
+            reservationModalMake(function_data);
+        } else {
+            alert("잠시 후 다시 시도해 주세요");
+            form_submit('/Reservation/calendar', {forDate : $('#forDate').val()}, 'post');
+        }
+    }
+
+    /* 고객 리스트 출력 */
+    function reservationModalMake(data){
+        var tmp1 = '';
+        $.each(data.cList, function (index, value){
+            tmp1 += '<tr class="client_select">' +
+                '<td width="8%">' +
+                '   <input type="hidden" name="reservation1_client_sms_check" class="" value="' + value.sms_check + '">' +
+                '   <input type="radio" name="customRadio" class="" value="' + value.idx + '">' +
+                    '<label></label>' +
+                '</td>' +
+                '<td  width="15%" name="client-name">' + uk(value.name) + '</td>' +
+                '<td width="22%" name="client-phone">' + uk(value.phone) + '</td>' +
+                '<td class="m-none" width="22.5%">' + uk_noshow(value.prepaid) + '</td>' +
+                '<td class="m-none" width="22.5%">' + numberWithCommas(uk_prepaid(value.client_price)) + '</td>' +
+                '<td class="m-none" width="10%">\n' + uk_noshow(value.noshow) + '</td>' +
+                '</tr>';
+        });
+        $('#clients_body').empty();
+        $('#clients_body').append(tmp1);
+
+        pagingButtonMake(data);
+    }
+    /* 페이징 버튼 그리기 */
+    function pagingButtonMake(data){
+        // 페이징 버튼
+        var tmp2 = '<li>' +
+            '<a href="#" aria-label="Previous" data-value="' + data.paging.prevPageNo + '" class="paging_btn">' +
+            '<span aria-hidden="true"><i class="fas fa-angle-left"></i></span>' +
+            '</a>' +
+            '</li>';
+        var start = parseInt(data.paging.startPageNo);
+        var end = parseInt(data.paging.endPageNo);
+        for(start; start <= end; start ++){
+            if(start == data.paging.pageNo){
+                tmp2 += '<li class="active">' +
+                    '<a href="#" data-value="' + start + '" class="paging_btn">' + start +
+                    '<span class="sr-only">(current)</span>' +
+                    '</a>' +
+                    '</li>';
+            } else {
+                tmp2 += '<li><a href="#" data-value="' + start + '" class="paging_btn">' + start + '</a></li>';
+            }
+        }
+        tmp2 += '<li>' +
+            '<a href="#" aria-label="Next" data-value="' + data.paging.nextPageNo + '" class="paging_btn">' +
+            '<span aria-hidden="true"><i class="fas fa-angle-right"></i></span>' +
+            '</a>' +
+            '</li>';
+
+        $('#paging_ul').empty();
+        $('#paging_ul').append(tmp2);
+    }
+    /* 페이징 버튼 그리기 */
+    function pagingHtmlCreate(paging){
+        var pageLi = '<li>\n' +
+            '    <a href="#" aria-label="Previous" data-value="'+ paging.prevPageNo +'" class="paging_btn">' +
+            '        <span aria-hidden="true"><i class="fas fa-angle-left"></i></span>\n' +
+            '    </a>\n' +
+            '</li>';
+        for(var i = paging.startPageNo; i <= paging.endPageNo; i++){
+            if(i == paging.pageNo){
+                pageLi = pageLi + '<li class="active">\n' +
+                    '                <a href="#" data-value="'+i+'" class="paging_btn">\n' +
+                    '                    '+i+'<span class="sr-only">(current)</span>\n' +
+                    '                </a>\n' +
+                    '            </li>';
+            }
+            else{
+                pageLi = pageLi + '            <li><a href="#" data-value="'+i+'" class="paging_btn">'+i+'</a></li>';
+            }
+        }
+        pageLi = pageLi + '<li>\n' +
+            '    <a href="#" aria-label="Next" data-value="'+paging.nextPageNo+'" class="paging_btn">\n' +
+            '        <span aria-hidden="true"><i class="fas fa-angle-right"></i></span>\n' +
+            '    </a>\n' +
+            '</li>';
+        return pageLi;
+    }
+    /* 모달1 페이징 */
+    $(document).on('click', '.paging_btn', function(){
+        // $(".paging_btn").click(function () {
+        $('#paging_ul').find('.active').removeClass('active');
+        $(this).parent().addClass('active');
+        var type = $("#serch_type option:selected").val();
+        var data = $("#serch_data").val();
+        var pageNo = $(this).attr("data-value");
+
+        pagingActive(type, data, pageNo);
+    });
+    /* 모달1 검색 */
+    function res_client_serch(){
+        var type = $('#serch_type option:selected').val();
+        var data = $('#serch_data').val();
+
+        pagingActive(type,data,1);
+    }
+    /* 검색 & 페이징 */
+    function pagingActive(type, data, pageNo){
+        $.ajax({
+            url : "/Reservation/reservation1Paging",
+            type: "post",
+            data : {
+                "type" : type,
+                "data" : data,
+                "pageNo" : pageNo
+            },
+            async : false,
+            dataType : "json",
+            success : function(data){
+                if(data.code == 200){
+                    $('#clients_body').empty();
+                    var client_array = new Array();
+                    client_array = data.cList;
+                    if(client_array.length > 0){
+                        for(var i = 0; i < client_array.length; i++){
+                            var td = '<tr class="client_select">'+
+                                '<td width="8%">' +
+                                '<input type="hidden" name="reservation1_client_sms_check" class="" value="' + client_array[i].sms_check + '">' +
+                                '   <input type="radio" name="customRadio" class="" value="'+client_array[i].idx+'">' +
+                                '</td>' +
+                                '<td width="15%" name="client-name">'+uk(client_array[i].name)+'</td>' +
+                                '<td width="22%" name="client-phone">'+uk(client_array[i].phone)+'</td>' +
+                                '<td width="22.5%">'+uk_noshow(client_array[i].prepaid)+'</td>' +
+                                '<td width="22.5%">'+uk_prepaid(client_array[i].client_price)+'</td>' +
+                                '<td width="10%">'+uk_noshow(client_array[i].noshow)+'</td>' +
+                                '</tr>';
+                            $('#clients_body').append(td);
+                        }
+                        var tmp = pagingHtmlCreate(data.paging);
+
+                        $('#paging_ul').empty();
+                        $('#paging_ul').append(tmp);
+
+                    } else{
+                        var td = '<tr><td colspan="6">고객이 존재하지 않습니다</td></tr>'
+                        $('#clients_body').append(td);
+                    }
+                } else{
+                    alert("잠시 후 다시 시도해 주세요");
+                    return false;
+                }
+            },
+            error : function(){
+                alert("에러가 발생했습니다."); location.reload();
+            }
+        });
+    };
+
+    /* 예약 등록 다음 클릭 (reservation2 open) */
+    function next_step(){
+        var res2_url = '/Reservation/reservation2';
+        var tmp = times.split(":");
+        var res_hour = tmp[0];
+        var res_minute = tmp[1];
+        var res_empl = tmp[2];
+        var ajax_data;
+
+        // 회원 예약
+        if($('#client_tab').parent("li").hasClass("active")){
+            var idx = $('input[name=customRadio]:checked').val();
+            var sms_check = $('input[name=customRadio]:checked').closest('tr').find('input[name=reservation1_client_sms_check]').val();
+            if(uk(idx) == ""){
+                alert("고객을 선택해 주세요");
+                return false;
+            }
+            ajax_data = {
+                type : 0,
+                client_idx : idx,
+                sms_check : sms_check,
+                res_hour : res_hour,
+                res_minute : res_minute,
+                res_empl : res_empl,
+                res_date : '${res_date}'
+            }
+        }
+        // 비회원 예약
+        else{
+            var un_name = $('#un_client_name').val();
+            var un_phone = $('#un_client_phone').val();
+            if(uk(un_name) == ""){
+                alert("이름을 입력해 주세요.");
+                $('#un_client_name').focus();
+                return false;
+            }else if(uk(un_phone) == ""){
+                alert("연락처를 입력해 주세요.");
+                $('#un_client_phone').focus();
+                return false;
+            }
+            ajax_data = {
+                type : 1,
+                name : un_name,
+                phone : un_phone,
+                res_hour : res_hour,
+                res_minute : res_minute,
+                res_empl : res_empl,
+                res_date : '${res_date}'
+            }
+        }
+
+        var data = submitAjax(res2_url, ajax_data);
+        reservationModal2Make(data);
+        modalTestClose();
+        $('#service_hour').val('0');
+        $('#service_hour').niceSelect('update');
+
+        // 예약 모달2 초기화
+        $('#chk1').closest('label').removeClass('active');
+        $('#chk2').closest('label').removeClass('active');
+        $('#service_cate').val('-1');
+        $('#service_detail').val('-1');
+        $('#service_hour').val('0');
+        $('#service_minute').val('00');
+        $('select').niceSelect('update');
+
+        $('#reservation-step2').modal('show');
+        $('#cate_color').css('background-color', '');
+    }
+    /* 예약 모달 1 닫기 */
+    function modalTestClose(){
+        $('.modal.in').modal('hide');
+    }
+</script>
+<%-- ================================= /.예약 모달 1 SCRIPT =================================--%>
+
+
+<%-- reservation 2 modal --%>
+<%--<a data-toggle="modal" href="${pageContext.request.contextPath}/Reservation/reservation2" data-target="#rservationModal02" role="button" data-backdrop="static" id="res_modal2" style="display: none;">
+    <span class="btn btn-xs btn-success">테스트 등록1</span>
+</a>
+<div id="rservationModal02" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="테스트정보 등록" aria-describedby="테스트 모달">
+    <div class="modal-dialog">
+        <div class="modal-content reservation-modal-end">
+        </div>
+    </div>
+</div>--%>
+
+<%-- ================================= [3]예약 모달 2 =================================--%>
+<div class="modal fade" id="reservation-step2" tabindex="-1" role="dialog" aria-labelledby="reservation-step2" aria-hidden="true" style="overflow: scroll;overflow-x: hidden">
+    <div class="modal-dialog" role="document" style="width: 509px;">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">예약 등록</h4>
+            </div>
+
+            <div class="modal-body" style="padding: 12px 0 0 30px;">
+                <%--<button class="close-btn02" id="" onclick="modalTestClost()"><i class="fas fa-times"></i></button>--%>
+                <input type="hidden" id="res_type">
+                <input type="hidden" id="client_idx">
+                <input type="hidden" id="client_sms_check">
+                <input type="hidden" id="un_name">
+                <input type="hidden" id="un_phone">
+                <div class="reservation-top" style="    padding: 10px;
+    border: 1px solid #ffc200;
+    width: 449px;
+    position: relative;
+    display: inline-block;
+    margin-bottom: 10px;
+    border-radius: 3px;">
+                        <div class="">
+                            <span>예약일시</span><span id="select-date"></span>
+                            <input type="image" id="res_calendar" src="${pageContext.request.contextPath}/static/img/ahaIMG/calendar.gif" value="${res_date}">
+                        </div>
+                        <div class="test-00">
+                            <select class="end-modal-body-top-select wide" id="res_hour"></select>
+                        </div>
+                        <div class="test-11">
+                            <select class="end-modal-body-top-select wide" id="res_minute"></select>
+                        </div>
+                </div>
+
+                    <div class="addclient_item">
+                        <p>예약 담당자</p>
+                        <div>
+                            <select class="end-table-body-select wide" id="empls"></select>
+                        </div>
+                    </div>
+                    <div class="addclient_item">
+                        <p>서비스</p>
+                        <div>
+                            <td class="pr-25" id="service_td" width="40%">
+                                <select class="end-table-body-select wide" id="service_cate"></select>
+                                <div class="service-color" id="cate_color"></div>
+                            </td>
+                            <td class="pl-25" width="40%">
+                                <select class="end-table-body-select wide" id="service_detail">
+                                    <option value="-1">선택</option>
+                                </select>
+                            </td>
+                        </div>
+                    </div>
+                    <div class="addclient_item">
+                        <p>시술 시간</p>
+                        <div>
+                            <select class="end-table-body-select wide" id="service_hour">
+                                <option value="0" selected>0시</option>
+                                <option value="1">1시</option>
+                                <option value="2">2시</option>
+                                <option value="3">3시</option>
+                                <option value="3">4시</option>
+                                <option value="3">5시</option>
+                            </select>
+                            <select class="end-table-body-select sr wide" id="service_minute"></select>
+                        </div>
+                    </div>
+                    <div class="addclient_item">
+                        <p>아이콘</p>
+                        <div class="btn-group-toggle" data-toggle="buttons">
+                            <label class="btn btn-icon" for="chk1">
+                                <input type="checkbox" id="chk1"> <i class="fas fa-splotch"></i>
+                            </label>
+                            <label class="btn btn-icon" for="chk2">
+                                <input type="checkbox" id="chk2"> <i class="fas fa-phone"></i>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="addclient_item">
+                        <p>예약 메모</p>
+                        <div>
+                            <textarea placeholder="메모를 입력해주세요." id="res_memo" style="height: 124px"></textarea>
+                        </div>
+                    </div>
+                    <div class="addclient_item">
+                        <p>문자발송 제외</p>
+                        <div>
+                            <input type="checkbox" id="chk10" name="sms_check"><label class="end-label" for="chk10"><em></em>예</label>
+                        </div>
+                    </div>
+            </div>
+            <div class="modal-footer" style="text-align: center;">
+                <button type="button" class="btn btn-primary" onclick="add_res()" style="    background-color: rgb(255,223,44);
+    color: rgba(0,0,0,0.8);
+    width: 162px;
+    border-radius: 2px;
+    height: 42px;
+    font-weight: 600;
+    border: 1px solid #ffc200;">등록</button>
+            </div>
+        </div>
+    </div>
+</div>
+<%-- ================================= 예약 모달 2 =================================--%>
+<%-- ================================= [4]예약 모달 2 SCRIPT =================================--%>
+<script>
+    $('#res_calendar').datepicker(datepickerObject());
+    $('#res_calendar').change(function(){
+        $('#select-date').text($(this).val());
+    });
+
+    function reservationModal2Make(data){
+
+        $('#res_type').val(data.type);
+        $('#client_idx').val(uk(data.client_idx));
+        $('#client_sms_check').val(uk(data.clientHasSmsCheck));
+        $('#un_name').val(uk(data.un_name));
+        $('#un_phone').val(uk(data.un_phone));
+        // 예약 시간
+        var res_date = $('#res-toss').val();
+        $('#select-date').empty();
+        $('#select-date').text(res_date);
+        $('#res_calendar').val(res_date);
+
+        var tmp1 = '';
+        var start_time = data.shop_open;
+        start_time = start_time.split(':');
+        var start_hour = parseInt(start_time[0]);
+        var end_time = data.shop_close;
+        end_time= end_time.split(':');
+        var end_hour = parseInt(end_time[0]);
+
+        for (start_hour; start_hour < end_hour; start_hour ++) {
+            tmp1 += '<option value="' + start_hour + '">' + start_hour + '시</option>';
+        }
+        $('#res_hour').empty();
+        $('#res_hour').append(tmp1);
+        $('#service_hour').val('-1');
+
+        var tmp2 = '';
+        if (data.default_minut == 10) {
+            tmp2 = '<option value="00" >00분</option>' +
+                '<option value="10" >10분</option>' +
+                '<option value="20" >20분</option>' +
+                '<option value="30" >30분</option>' +
+                '<option value="40" >40분</option>' +
+                '<option value="50" >50분</option>';
+        } else {
+            tmp2 = '<option value="00">00분</option>\n' +
+                '<option value="15">15분</option>' +
+                '<option value="30">30분</option>' +
+                '<option value="45">45분</option>';
+        }
+        $('#res_minute').empty();
+        $('#res_minute').append(tmp2);
+        // /. 예약 시간
+
+        // 카테고리 색깔
+        var tmp3 = '<option value="-1" data-value="#FFFFFF">선택</option>';
+        $.each(data.service_list, function (index, value) {
+            var color = value.color;
+            // color = color.replace("\"", "");
+            // color = color.replace("\"", "");
+            color = color.replace(/\"/gi, "");
+            tmp3 += '<option value="' + value.idx + '" data-value="' + color + '">' + value.category + '</option>';
+        });
+        $('#service_cate').empty();
+        $('#service_cate').append(tmp3);
+        // /. 카테고리
+
+        // 직원
+        var tmp4 = '';
+        $.each(data.emplList, function (index, value) {
+            var empl_name = value.name;
+            // empl_name = empl_name.replace("\"", "");
+            // empl_name = empl_name.replace("\"", "");
+            empl_name = empl_name.replace(/\"/gi, "");
+            tmp4 += '<option value="' + value.idx + '">' + empl_name + '</option>';
+        });
+        $('#empls').empty();
+        $('#empls').append(tmp4);
+        $('#empls').val(data.res_empl);
+        // /. 직원
+
+        var tmp5 = '';
+        if (data.default_minut == 10) {
+            tmp5 = '<option value="00" selected>00분</option>' +
+                '<option value="10">10분</option>' +
+                '<option value="20">20분</option>' +
+                '<option value="30">30분</option>' +
+                '<option value="40">40분</option>' +
+                '<option value="50">50분</option>';
+        } else {
+            tmp5 = '<option value="00" selected>00분</option>' +
+                '<option value="15">15분</option>' +
+                '<option value="30">30분</option>' +
+                '<option value="45">45분</option>';
+        }
+        $('#service_minute').empty();
+        $('#service_minute').append(tmp5);
+
+        var res_hour = $('#res-hour').val();
+        var res_minute = $('#res-minute').val();
+
+        if(res_minute == 0) res_minute = "00";
+        $('#res_hour').val(res_hour);
+        $('#res_minute').val(res_minute);
+        $('select').niceSelect('update')
+    }
+
+    // service detail call
+    $(document).on('change', '#service_cate', function(){
+    // $('#service_cate').change(function(){
+        var color = $('#service_cate option:selected').attr("data-value");
+        $('#cate_color').css("background-color", color);
+        $('#service_detail').empty();
+        $('#service_detail').append('<option value="-1">선택</option>');
+        var tmp = "";
+        var cate_name = $('#service_cate option:selected').text();
+        var shopIdx = '${shopInfo.idx}';
+        $.ajax({
+            url : "/Reservation/serviceDetailCall",
+            type: "post",
+            data : {
+                "shopIdx" : shopIdx,
+                "cateName" : cate_name
+            },
+            dataType : "json",
+            async : false,
+            success : function(data){
+                if(data.code == 200){
+                    for(var i = 0; i < data.detailList.length; i++){
+                        tmp = tmp + '<option value="'+data.detailList[i].idx+'" data-value="'+removeQuotes(data.detailList[i].time)+'">' + data.detailList[i].name + '</option>';
+                    }
+                    $('#service_detail').append(tmp);
+                    $('#service_detail').niceSelect('update');
+                } else{
+                    alert("잠시 후 다시 시도해 주세요.");
+                    form_submit('/Reservation/calendar', {forDate : $('#forDate').val()}, 'post');
+                    return false;
+                }
+            },
+            error : function(){
+                alert("에러가 발생했습니다."); location.reload();
+            }
+        });
+    });
+
+    // service detail selected
+    $(document).on("change", "#service_detail", function(){
+        var default_minute = '${shopInfo.default_minute}';
+
+        var time = $('#service_detail option:selected').attr("data-value");
+        if(uk(time) == ""){
+            $('#service_detail').val("-1").prop("selected", true);
+            $('#service_hour').val('0').prop("selected", true);
+            $('#service_minute').val('00').prop("selected", true);
+            $('select').niceSelect('update');
+            return false;
+        }
+        var times = time.split(":");
+        var hour = times[0];
+        var minute = parseInt(times[1]);
+        hour = removefirstZero(hour);
+
+        if(uk(hour) == "") $('#service_hour').val(-1).prop("selected", true);
+        else $('#service_hour').val(hour).prop("selected", true);
+
+        //console.log("minute : " + minute);
+        //console.log("default_minute : " + default_minute);
+        $('#service_minute').val(minute).prop("selected", true);
+        if(default_minute == "10"){
+            // if(minute >= 0 && minute < 10) $('#service_minute').val("00").prop("selected", true);
+            // else if(minute >= 10 && minute < 20) $('#service_minute').val("10").prop("selected", true);
+            if(minute == 0) $('#service_minute').val("00").prop("selected", true);
+            else if(minute > 0 && minute < 20) $('#service_minute').val("10").prop("selected", true);
+            else if(minute >= 20 && minute < 30) $('#service_minute').val("20").prop("selected", true);
+            else if(minute >= 30 && minute < 40) $('#service_minute').val("30").prop("selected", true);
+            else if(minute >= 40 && minute < 50) $('#service_minute').val("40").prop("selected", true);
+            else if(minute >= 50 && minute < 60) $('#service_minute').val("50").prop("selected", true);
+            else $('#service_minute').val(-1).prop("selected", true);
+        } else{
+            // if(minute >= 0 && minute < 15) $('#service_minute').val("00").prop("selected", true);
+            // else if(minute >= 15 && minute < 30) $('#service_minute').val("15").prop("selected", true);
+            if(minute == 0) $('#service_minute').val("00").prop("selected", true);
+            else if(minute > 0 && minute < 30) $('#service_minute').val("15").prop("selected", true);
+            else if(minute >= 30 && minute < 45) $('#service_minute').val("30").prop("selected", true);
+            else if(minute >= 45 && minute < 60) $('#service_minute').val("45").prop("selected", true);
+            else $('#service_minute').val(-1).prop("selected", true);
+        }
+        $('select').niceSelect('update');
+    });
+
+    function add_res(){
+        var cate_idx = $('#service_cate').val();
+        var res_date = $('#res_calendar').val();
+        var memo = $('#res_memo').val();
+        var res_hour = $('#res_hour option:selected').val();
+        var res_minute = $('#res_minute option:selected').val();
+        var service_cate = $('#service_cate option:selected').val();
+        var service_detail;
+        var service_color = $('#service_cate option:selected').attr("data-value");
+        var empls = $('#empls option:selected').val();
+        var service_hour = $('#service_hour option:selected').val();
+        var service_minute = $('#service_minute option:selected').val();
+        var icons = "";
+        var sms_check = 0;
+        var end_time;
+        var end_hour;
+        var end_minute;
+        var res_type = $('#res_type').val();
+        var un_name = "";
+        var un_phone = "";
+        var client_idx = "";
+        var client_has_sms_check = "";
+
+        if(uk(res_type) == 0){
+            client_idx = $('#client_idx').val();
+            client_has_sms_check = $('#client_sms_check').val();
+        } else{
+            un_name = $('#un_name').val();
+            un_phone = replaceAll($('#un_phone').val(), '-', '');
+            client_has_sms_check = 0;
+        }
+
+        if(uk(res_date) == ""){
+            alert("예약 날짜를 선택해 주세요");
+            $('#res_calendar').focus();
+            return false;
+        }
+        if(uk(res_hour) == "" || uk(res_hour) == -1){
+            alert("예약 시간을 선택해 주세요");
+            $('#res_hour').focus();
+            return false;
+        }
+        if(uk(res_minute) == "" || uk(res_minute) == -1){
+            alert("예약 분을 선택해 주세요");
+            $('#res_minute').focus();
+            return false;
+        }
+        if(uk(service_cate) == -1 || uk(service_cate) == ""){
+            alert("시술을 선택해 주세요");
+            $('#service_cate').focus();
+            return false;
+        } else{
+            service_detail = $('#service_detail option:selected').val();
+            if(uk(service_detail) == "" || uk(service_detail) == -1){
+                alert("시술을 선택해 주세요");
+                $('#service_detail').focus();
+                return false;
+            }
+        }
+        if(uk(empls) == "" || uk(empls) == -1){
+            alert("직원을 선택해 주세요");
+            $('#empls').focus();
+            return false;
+        }
+        if(uk(service_hour) == "0" && uk(service_minute) == "00"){
+            alert("시술 시간을 선택해 주세요");
+            $('#service_hour').focus();
+            return false;
+        }
+
+        if($('#chk1').is(":checked")) icons = icons + "1";
+        if($('#chk2').is(":checked"))
+            if(icons == "1") icons = icons + ",2";
+            else icons = "2";
+        if($('#chk10').is(":checked")) sms_check = 1;
+
+        /* end time */
+        if('${shopInfo.default_minute}' == 10){
+            if((Number(res_minute) + Number(service_minute)) >= 60){
+                end_hour = ((Number(res_minute) + Number(service_minute)) / 60) + (Number(res_hour) + Number(service_hour));
+                end_minute = (Number(res_minute) + Number(service_minute)) % 60;
+            }
+            else{
+                end_hour = Number(res_hour) + Number(service_hour);
+                end_minute = Number(res_minute) + Number(service_minute);
+            }
+            if(end_minute >= 0 && end_minute < 10){ end_minute = "00";}
+            if(end_minute >= 10 && end_minute < 20){ end_minute = "10";}
+            if(end_minute >= 20 && end_minute < 30){ end_minute = "20";}
+            if(end_minute >= 30 && end_minute < 40){ end_minute = "30";}
+            if(end_minute >= 40 && end_minute < 50){ end_minute = "40";}
+            if(end_minute >= 50 && end_minute < 60){ end_minute = "50";}
+        } else{
+            if((Number(res_minute) + Number(service_minute)) >= 60){
+                end_hour = ((Number(res_minute) + Number(service_minute)) / 60) + (Number(res_hour) + Number(service_hour));
+                end_minute = (Number(res_minute) + Number(service_minute)) % 60;
+            }
+            else{
+                end_hour = Number(res_hour) + Number(service_hour);
+                end_minute = Number(res_minute) + Number(service_minute);
+            }
+            if(end_minute >= 0 && end_minute < 15){ end_minute = "00";}
+            if(end_minute >= 15 && end_minute < 30){ end_minute = "15";}
+            if(end_minute >= 30 && end_minute < 45){ end_minute = "30";}
+            if(end_minute >= 45 && end_minute < 60){ end_minute = "45";}
+        }
+        end_hour = Math.floor(end_hour);
+        end_time = Math.floor(end_hour) + ":" + end_minute;
+
+        $.ajax({
+            url : "/Reservation/addReservation",
+            type: "post",
+            data : {
+                "res_type" : res_type,
+                "res_date" : res_date,
+                "res_hour" : res_hour,
+                "res_minute" : res_minute,
+                "service_detail" : service_detail,
+                "memo" : memo,
+                "clientIdx" : client_idx,
+                "clientHasSmsCheck" : client_has_sms_check,
+                "emplIdx" : empls,
+                "end_time" : end_time,
+                "color" : service_color,
+                "service_hour" : service_hour,
+                "service_minute" : service_minute,
+                "icons" : icons,
+                "sms_check" : sms_check,
+                "un_name" : un_name,
+                "un_phone" : un_phone,
+                "end_hour" : end_hour,
+                "end_minute" : end_minute,
+                "cate_idx" : cate_idx,
+                "client_phone" : client_phone,
+                "client_name" : client_name
+            },
+            dataType : "json",
+            success : function(data){
+                if(data.code == 200){
+                    form_submit('/Reservation/calendar', {forDate : $('#forDate').val()}, 'post');
+                    return false;
+                } else if(data.code == 901){
+                    alert("예약이 중첩되었습니다");
+                    return false;
+                } else if(data.code == 903){
+                    alert("예약 가능한 시간이 아닙니다");
+                }else{
+                    alert("잠시 후 다시 시도해 주세요");
+                    return false;
+                }
+            },
+            error : function(){
+                alert("에러가 발생했습니다."); location.reload();
+            }
+        });
+    }
+</script>
+<%-- ================================= /.예약 모달 2 SCRIPT =================================--%>
+
+ <%--mf reservation modal --%>
+<%--<a data-toggle="modal" href="${pageContext.request.contextPath}/Reservation/modifiedReservation" data-target="#mf-reservation" role="button" data-backdrop="static" id="mf_res_modal" style="display: none;">--%>
+    <%--<span class="btn btn-xs btn-success">테스트 등록1</span>--%>
+<%--</a>--%>
+<%--<div id="mf-reservation" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="테스트정보 등록" aria-describedby="테스트 모달">--%>
+    <%--<div class="modal-dialog">--%>
+        <%--<div class="modal-content reservation-modal-end">--%>
+        <%--</div>--%>
+    <%--</div>--%>
+<%--</div>--%>
+
+
+<%@include file="../../../include/modals/calendar/mf-reservation.jspf"%>

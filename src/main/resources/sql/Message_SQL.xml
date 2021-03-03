@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="messages">
+    <!-- 문자 - 고객 카운트 -->
+    <select id="selectAllClientCount" parameterType="hashmap" resultType="hashmap">
+        SELECT COUNT(*) as count
+        FROM ${shop_id}_client
+        WHERE EXISTS
+        (SELECT idx FROM ${shop_id}_client)
+        <if test='lastVisit != null and lastVisit != "0"'>AND last_visit_date >= date_add(now(), interval -${lastVisit} month)</if>
+        <if test='noVisit != null and noVisit != "0"'>AND last_visit_date <![CDATA[ <= ]]> date_add(now(), interval -${noVisit} month)</if>
+        <if test='rank != null and rank != "0"'>AND rank = #{rank}</if>
+        <if test='visit != null and visit != "0"'>AND visit = #{visit}</if>
+        <if test='status != null and status == "0" '>AND sum_array_cells(prepaid->'$[*].cost') = 0  AND sum_array_cells(ticket->'$[*].cost') = 0 </if>
+        <if test='status != null and status == "1" '>AND sum_array_cells(prepaid->'$[*].cost') > 0 OR sum_array_cells(ticket->'$[*].cost') > 0  </if>
+
+
+        <choose>
+            <when test='filter != null and filter == "code"'>AND code LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "name"'>AND name LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "phone"'>AND phone LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "all"'>
+                AND
+                (code LIKE '%${text}%' OR
+                name LIKE '%${text}%' OR
+                phone LIKE '%${text}%')
+            </when>
+            <otherwise></otherwise>
+        </choose>
+
+	</select>
+    <!-- 문자 - 고객 페이징 -->
+    <select id="selectAllClientPaging" parameterType="hashmap" resultType="hashmap">
+        SELECT idx,code,name,phone,rank,visit,last_visit_date,sum_array_cells(prepaid->'$[*].cost') as prepaid,sum_array_cells(ticket->'$[*].cost') as ticket
+        FROM ${shop_id}_client
+        WHERE EXISTS
+        (SELECT idx FROM ${shop_id}_client)
+
+        <if test='lastVisit != null and lastVisit != "0"'>AND last_visit_date >= date_add(now(), interval -${lastVisit} month)</if>
+        <if test='noVisit != null and noVisit != "0"'>AND last_visit_date <![CDATA[ <= ]]> date_add(now(), interval -${noVisit} month)</if>
+        <if test='rank != null and rank != "0"'>AND rank = #{rank}</if>
+        <if test='visit != null and visit != "0"'>AND visit = #{visit}</if>
+        <if test='status != null and status == "0" '>AND sum_array_cells(prepaid->'$[*].cost') = 0  AND sum_array_cells(ticket->'$[*].cost') = 0 </if>
+        <if test='status != null and status == "1" '>AND sum_array_cells(prepaid->'$[*].cost') > 0 OR sum_array_cells(ticket->'$[*].cost') > 0  </if>
+
+
+        <choose>
+            <when test='filter != null and filter == "code"'>AND code LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "name"'>AND name LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "phone"'>AND phone LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "all"'>
+                AND
+                (code LIKE '%${text}%' OR
+                name LIKE '%${text}%' OR
+                phone LIKE '%${text}%')
+            </when>
+            <otherwise></otherwise>
+        </choose>
+
+        <if test ='sort_type != null and sort_type != "none"'>order by </if>
+        <if test ='sort_type != null and sort_type == "name_asc"'>name asc</if>
+        <if test ='sort_type != null and sort_type == "name_desc"'>name desc</if>
+        <if test ='sort_type != null and sort_type == "rank_asc"'>case  when rank = 'vvip' then 5 when rank = 'vip' then 4 when rank = '우수' then 3 when rank = '일반' then 2 else 1 end</if>
+        <if test ='sort_type != null and sort_type == "rank_desc"'>case  when rank = 'vvip' then 1 when rank = 'vip' then 2 when rank = '우수' then 3 when rank = '일반' then 4 else 5 end</if>
+        <if test ='sort_type != null and sort_type == "prepaid_asc"'>sum_array_cells(prepaid->'$[*].cost') asc </if>
+        <if test ='sort_type != null and sort_type == "prepaid_desc"'>sum_array_cells(prepaid->'$[*].cost') desc </if>
+        <if test ='sort_type != null and sort_type == "ticket_asc"'>sum_array_cells(ticket->'$[*].cost') asc </if>
+        <if test ='sort_type != null and sort_type == "ticket_desc"'>sum_array_cells(ticket->'$[*].cost') desc </if>
+
+        LIMIT ${start_idx}, ${end_idx}
+	</select>
+    <select id="selectAllCheckClientCount" parameterType="hashmap" resultType="hashmap">
+        SELECT COUNT(*) AS clientCount
+        FROM ${id}_client
+        WHERE EXISTS
+        (SELECT idx FROM ${id}_client)
+        <if test="senderListFlag == 'true'">
+            AND
+            <foreach collection="senderList" item="item" index="index" open="(" separator="OR" close=")">
+                idx <![CDATA[<>]]> ${item.client_idx}
+            </foreach>
+        </if>
+        <if test='lastVisit != null and lastVisit != "0"'>AND last_visit_date >= date_add(now(), interval -${lastVisit} month)</if>
+        <if test='noVisit != null and noVisit != "0"'>AND last_visit_date <![CDATA[ <= ]]> date_add(now(), interval -${noVisit} month)</if>
+        <if test='rank != null and rank != "0"'>AND rank = #{rank}</if>
+        <if test='visit != null and visit != "0"'>AND visit = #{visit}</if>
+        <choose>
+            <when test='filter != null and filter == "code"'>AND code LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "name"'>AND name LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "phone"'>AND phone LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "all"'>
+                AND
+                (code LIKE '%${text}%' OR
+                name LIKE '%${text}%' OR
+                phone LIKE '%${text}%')
+            </when>
+            <otherwise></otherwise>
+        </choose>
+        LIMIT 10000
+    </select>
+    <select id="selectAllCheckClient" parameterType="hashmap" resultType="hashmap">
+        SELECT *
+        FROM ${id}_client
+        WHERE EXISTS
+        (SELECT idx FROM ${id}_client)
+        <if test="senderListFlag == 'true'">
+            AND
+            <foreach collection="senderList" item="item" index="index" open="(" separator="OR" close=")">
+                idx <![CDATA[<>]]> ${item.client_idx}
+            </foreach>
+        </if>
+        <if test='lastVisit != null and lastVisit != "0"'>AND last_visit_date >= date_add(now(), interval -${lastVisit} month)</if>
+        <if test='noVisit != null and noVisit != "0"'>AND last_visit_date <![CDATA[ <= ]]> date_add(now(), interval -${noVisit} month)</if>
+        <if test='rank != null and rank != "0"'>AND rank = #{rank}</if>
+        <if test='visit != null and visit != "0"'>AND visit = #{visit}</if>
+        <choose>
+            <when test='filter != null and filter == "code"'>AND code LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "name"'>AND name LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "phone"'>AND phone LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "all"'>
+                AND
+                (code LIKE '%${text}%' OR
+                name LIKE '%${text}%' OR
+                phone LIKE '%${text}%')
+            </when>
+            <otherwise></otherwise>
+        </choose>
+        LIMIT #{loopStart}, #{loopEnd}
+    </select>
+    <select id="selectNotAllCheckClientCount" parameterType="hashmap" resultType="hashmap">
+        SELECT COUNT(*) AS clientCount
+        FROM ${id}_client
+        WHERE EXISTS
+        (SELECT idx FROM ${id}_client)
+        <if test="senderListFlag == 'true'">
+            AND
+            <foreach collection="senderList" item="item" index="index" open="(" separator="OR" close=")">
+                idx = ${item.client_idx}
+            </foreach>
+        </if>
+        <if test='lastVisit != null and lastVisit != "0"'>AND last_visit_date >= date_add(now(), interval -${lastVisit} month)</if>
+        <if test='noVisit != null and noVisit != "0"'>AND last_visit_date <![CDATA[ <= ]]> date_add(now(), interval -${noVisit} month)</if>
+        <if test='rank != null and rank != "0"'>AND rank = #{rank}</if>
+        <if test='visit != null and visit != "0"'>AND visit = #{visit}</if>
+        <choose>
+            <when test='filter != null and filter == "code"'>AND code LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "name"'>AND name LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "phone"'>AND phone LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "all"'>
+                AND
+                (code LIKE '%${text}%' OR
+                name LIKE '%${text}%' OR
+                phone LIKE '%${text}%')
+            </when>
+            <otherwise></otherwise>
+        </choose>
+        LIMIT 10000
+    </select>
+    <select id="selectNotAllCheckClient" parameterType="hashmap" resultType="hashmap">
+        SELECT *
+        FROM ${id}_client
+        WHERE EXISTS
+        (SELECT idx FROM ${id}_client)
+        <if test="senderListFlag == 'true'">
+            AND
+            <foreach collection="senderList" item="item" index="index" open="(" separator="OR" close=")">
+                idx = ${item.client_idx}
+            </foreach>
+        </if>
+        <if test='lastVisit != null and lastVisit != "0"'>AND last_visit_date >= date_add(now(), interval -${lastVisit} month)</if>
+        <if test='noVisit != null and noVisit != "0"'>AND last_visit_date <![CDATA[ <= ]]> date_add(now(), interval -${noVisit} month)</if>
+        <if test='rank != null and rank != "0"'>AND rank = #{rank}</if>
+        <if test='visit != null and visit != "0"'>AND visit = #{visit}</if>
+        <choose>
+            <when test='filter != null and filter == "code"'>AND code LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "name"'>AND name LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "phone"'>AND phone LIKE '%${text}%'</when>
+            <when test='filter != null and filter == "all"'>
+                AND
+                (code LIKE '%${text}%' OR
+                name LIKE '%${text}%' OR
+                phone LIKE '%${text}%')
+            </when>
+            <otherwise></otherwise>
+        </choose>
+        LIMIT #{loopStart}, #{loopEnd}
+    </select>
+
+
+
+    <select id="selectAutoMessage" parameterType="hashmap" resultType="hashmap">
+        SELECT B.*
+        FROM (
+            SELECT idx
+            FROM message_auto
+            WHERE type = #{type} AND shop_idx = #{shop_idx}
+        ) A
+        JOIN message_auto B
+        ON A.idx = B.idx
+    </select>
+
+    <!-- 메세지 발송내역 적제 -->
+    <insert id="insertMessageData" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO ${id}_msg_history(method, target_count, receipt_num, status, wait)
+        VALUES(#{method}, #{send_count}, #{receipt_num}, #{status}, #{send_count});
+    </insert>
+
+    <!-- 문자 포인트 차감 -->
+    <update id="updateDeductionMessagePointSubtract" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE BeautyingNail.shop
+        SET msg_point = msg_point - ${subtractPoint}
+        WHERE idx = #{shopIdx} AND id = #{shopId}
+    </update>
+
+    <!-- 자동 문자 설정 가져오기 -->
+    <select id="selectAutoMSGSettings" parameterType="hashmap" resultType="hashmap">
+        SELECT A.*
+        FROM (
+			SELECT idx
+    		FROM message_auto
+    		WHERE shop_idx = #{idx}
+		) B
+		JOIN message_auto A
+		ON B.idx = A.idx
+    </select>
+    <select id="selectServiceCategory14" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category, B.*
+        FROM services A
+        LEFT JOIN message_auto B
+        ON A.idx = B.cate_idx AND A.shop_idx = B.shop_idx AND B.type like '14%'
+        WHERE
+           A.shop_idx = ${idx} AND
+           A.type = 0 AND
+           A.name is null
+        ORDER BY  A.idx ASC
+    </select>
+    <select id="selectServiceCategory15" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category, B.*
+        FROM services A
+        LEFT JOIN message_auto B
+        ON A.idx = B.cate_idx AND A.shop_idx = B.shop_idx AND B.type like '15%'
+        WHERE
+           A.shop_idx = ${idx} AND
+           A.type = 0 AND
+           A.name is null
+        ORDER BY  A.idx ASC
+    </select>
+    <!-- setting msg check -->
+    <select id="autoSettingCheck" parameterType="hashmap" resultType="hashmap">
+        SELECT idx
+        FROM message_auto
+        WHERE
+           shop_idx = ${idx} AND
+           type = #{type}
+    </select>
+    <!-- TYPE 1 -->
+    <update id="updateAutoMessageType1" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE BeautyingNail.message_auto
+		SET
+		    content = #{text},
+            <if test='method != null and method == "0"'>method = 'sms', </if>
+            <if test='method != null and method == "1"'>method = 'lms', </if>
+		    onoff = ${onoff},
+		    send_time = '${hour}:${minute}'
+		WHERE shop_idx = #{idx} AND type like #{type} AND idx = ${autoIDX}
+    </update>
+    <insert id="insertAutoMessageType1" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO BeautyingNail.message_auto
+        (shop_idx, type, content, method, onoff, send_time)
+		VALUES (${idx}, #{type}, #{text},
+        <if test='method != null and method == "0"'>'sms', </if>
+        <if test='method != null and method == "1"'>'lms', </if>
+        ${onoff}, '${hour}:${minute}'
+        )
+    </insert>
+    <!-- TYPE 2 -->
+    <update id="updateAutoMessageType2" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE BeautyingNail.message_auto
+        SET
+        content = #{text},
+        <if test='method != null and method == "0"'>method = 'sms', </if>
+        <if test='method != null and method == "1"'>method = 'lms', </if>
+        onoff = ${onoff},
+        send_time = 'now'
+        WHERE shop_idx = #{idx} AND type like #{type} AND idx = ${autoIDX}
+    </update>
+    <insert id="insertAutoMessageType2" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO BeautyingNail.message_auto
+        (shop_idx, type, content, method, onoff, send_time)
+        VALUES (${idx}, #{type}, #{text},
+        <if test='method != null and method == "0"'>'sms', </if>
+        <if test='method != null and method == "1"'>'lms', </if>
+        ${onoff}, 'now'
+        )
+    </insert>
+    <!-- TYPE 3 -->
+    <update id="updateAutoMessageType3" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE BeautyingNail.message_auto
+        SET
+        content = #{text},
+        <if test='method != null and method == "0"'>method = 'sms', </if>
+        <if test='method != null and method == "1"'>method = 'lms', </if>
+        onoff = ${onoff},
+        send_time = #{minute}
+        WHERE shop_idx = #{idx} AND type like #{type} AND idx = ${autoIDX}
+    </update>
+    <insert id="insertAutoMessageType3" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO BeautyingNail.message_auto
+        (shop_idx, type, content, method, onoff, send_time)
+        VALUES (${idx}, #{type}, #{text},
+        <if test='method != null and method == "0"'>'sms', </if>
+        <if test='method != null and method == "1"'>'lms', </if>
+        ${onoff}, #{minute}
+        )
+    </insert>
+    <!-- TYPE 4 -->
+    <update id="updateAutoMessageType4" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE BeautyingNail.message_auto
+        SET
+        content = #{text},
+        <if test='method != null and method == "0"'>method = 'sms', </if>
+        <if test='method != null and method == "1"'>method = 'lms', </if>
+        onoff = ${onoff},
+        send_time = '${day}:${hour}:${minute}',
+        cost = #{cost}
+        WHERE shop_idx = #{idx} AND type like #{type} AND idx = ${autoIDX}
+    </update>
+    <insert id="insertAutoMessageType4" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO BeautyingNail.message_auto
+        (shop_idx, type, content, method, onoff, send_time, cost)
+        VALUES (${idx}, #{type}, #{text},
+        <if test='method != null and method == "0"'>'sms', </if>
+        <if test='method != null and method == "1"'>'lms', </if>
+        ${onoff}, '${day}:${hour}:${minute}', #{cost}
+        )
+    </insert>
+    <!-- TYPE 5 -->
+    <update id="updateAutoMessageType5" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE BeautyingNail.message_auto
+        SET
+        content = #{text},
+        <if test='method != null and method == "0"'>method = 'sms', </if>
+        <if test='method != null and method == "1"'>method = 'lms', </if>
+        onoff = ${onoff},
+        send_time = #{day}
+        WHERE shop_idx = #{idx} AND type like #{type} AND idx = ${autoIDX}
+    </update>
+    <insert id="insertAutoMessageType5" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO BeautyingNail.message_auto
+        (shop_idx, type, content, method, onoff, send_time, cate_idx)
+        VALUES (${idx}, #{type}, #{text},
+        <if test='method != null and method == "0"'>'sms', </if>
+        <if test='method != null and method == "1"'>'lms', </if>
+        ${onoff}, #{day}, ${cate_idx}
+        )
+    </insert>
+    <!-- TYPE 6 -->
+    <update id="updateAutoMessageType6" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE BeautyingNail.message_auto
+        SET
+        content = #{text},
+        <if test='method != null and method == "0"'>method = 'sms', </if>
+        <if test='method != null and method == "1"'>method = 'lms', </if>
+        onoff = ${onoff},
+        send_time = '${day}:${hour}:${minute}',
+        rank = #{rank}
+        WHERE shop_idx = #{idx} AND type like #{type} AND idx = ${autoIDX}
+    </update>
+    <insert id="insertAutoMessageType6" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO BeautyingNail.message_auto
+        (shop_idx, type, content, method, onoff, send_time, rank)
+        VALUES (${idx}, #{type}, #{text},
+        <if test='method != null and method == "0"'>'sms', </if>
+        <if test='method != null and method == "1"'>'lms', </if>
+        ${onoff}, '${day}:${hour}:${minute}', #{rank}
+        )
+    </insert>
+
+    <!-- 문자 발송내역 AllCount -->
+    <select id="selectAllMessageList" parameterType="hashmap" resultType="hashmap">
+        SELECT COUNT(*) as count
+        FROM ${id}_msg_history
+        WHERE DATE(#{startDate}) <![CDATA[ <= ]]> DATE(date) AND DATE(date) <![CDATA[ <= ]]> DATE(#{endDate})
+          AND  status = 0 AND target_count <![CDATA[ >= ]]> #{target_count}
+        <if test='method != "all"'>AND method = #{method}</if>
+    </select>
+
+    <!-- 문자 발송내역 페이징 -->
+    <select id="selectSortingAndPagingMessages" parameterType="hashmap" resultType="hashmap">
+        SELECT idx, DATE_FORMAT(receive_time, '%Y-%m-%d %H:%i') as receive_time, receipt_num, target_count, success, fail, wait, method, content
+        FROM ${id}_msg_history
+        WHERE DATE(#{startDate}) <![CDATA[ <= ]]> DATE(date) AND DATE(date) <![CDATA[ <= ]]> DATE(#{endDate})
+          AND  status = 0 AND target_count <![CDATA[ >= ]]> #{target_count}
+        <if test='method != "all"'>AND method = #{method}</if>
+        ORDER BY date DESC
+        LIMIT ${start_idx}, ${end_idx}
+    </select>
+
+</mapper>

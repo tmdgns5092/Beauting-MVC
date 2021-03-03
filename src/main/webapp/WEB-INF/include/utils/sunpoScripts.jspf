@@ -1,0 +1,407 @@
+<%@ page pageEncoding="utf-8" %>
+<%-- cti_inc_12 --%>
+<script>
+    //없으면 에러가 발생합니다.
+    var wcti;
+    /* 전화오고 받은 상태인지 체크 */
+    var ringBool = sessionStorage.getItem("ringBool") == "true";
+    var callMap = sessionStorage.getItem("callMap");
+
+    if (callMap == null) callMap = {};
+    else callMap = JSON.parse(callMap);
+
+    /* 페이지 이동시 ringBool 값 유지 목적 */
+    $(document).keypress(function (e) {
+        //console.log(e.which);
+        if (e.which == 48) {
+            //console.log(wcti);
+        }
+    });
+
+    window.onbeforeunload = function () {
+        sessionStorage.setItem("ringBool", ringBool);
+        sessionStorage.setItem("callMap", JSON.stringify(callMap));
+    };
+
+    function setCallData(map) {
+        //console.log('-----------------setPhoneNumber()');
+        callMap = map;
+    }
+</script>
+<script type="text/javascript">
+    var cidwin = "";
+
+    var eventstr = new Array(50); //(50) ; //As String * 40
+    var g_write_prt = 0; //As Byte
+    var g_read_prt = 0; //As Byte
+    var telnum = "";//As String
+
+    var cidCallerObj = {
+        hookState: "00"
+        , Dialer: 1
+        , M1: 3
+        , M2: 0x13
+        , M4: 0x23
+        , DM2: 0x33
+        , SOUND: 0x11
+        , telnum: ""
+    };
+
+    function ins_yn() { //소프트웨어 설치
+        //console.log("ins_yn 소프트웨어 설치");
+        var str;
+        str = confirm("발신감지SW가 설치되지 않은것 같습니다." + "\n" + "설치하시겠습니까?");
+        if (str == true) {
+            location.href = "../../../dist/cab/발신장치 셋업프로그램.exe";
+        }
+    }
+    /*
+        $(document).ready(function () {
+           connec();
+        });*/
+
+    function connec() {
+        //기종이 연결됬는지 확인해 주는곳
+        /*var form2 = $("#dialForm");*/
+        //console.log("connec");
+
+        var Dialer = 1;
+        var M1 = 3;
+        var M2 = 0x13;
+        var M4 = 0x23;
+        var DM2 = 0x33;
+        var SOUND = 0x11;
+        try {
+            var i, j;
+            var devicetype = "";// As String * 50
+            var msg = "";
+            for (i = 0; i <= 3; i++) {
+                j = form2.USBDial.GetDialerType(i);
+                if (j == 0) {
+                    devicetype = "block:" + String.fromCharCode(i + 0x30) + " 장치가 연결이 안되었습니다";
+                }
+                else if (j == Dialer) {
+                    devicetype = "block:" + String.fromCharCode(i + 0x30) + " 장치가 Dialer입니다";
+                } // & Chr$(i + &H30) & " Devicetype is Dialer"
+                else if (j == M1) {
+                    devicetype = "block:" + String.fromCharCode(i + 0x30) + " Devicetype is M1";
+                }
+                else if (j == M2) {
+                    devicetype = "block:" + String.fromCharCode(i + 0x30) + " Devicetype is M2";
+                }
+                else if (j == M4) {
+                    devicetype = "block:" + String.fromCharCode(i + 0x30) + " Devicetype is M4";
+                }
+                else if (j == DM2) {
+                    devicetype = "block:" + String.fromCharCode(i + 0x30) + " Devicetype is DM2";
+                }
+                else if (j == SOUND) {
+                    devicetype = "block:" + String.fromCharCode(i + 0x30) + " Devicetype is SOUND";
+                }
+                // List1.AddItem devicetype
+                msg = msg + "\n" + devicetype;
+            }
+            //console.log(msg);
+            var tf = msg.indexOf("Devicetype is") >= 0;
+            //console.log(tf);
+            if (!tf) {
+                try {
+                    document.all["id_ctimsgarea"].innerHTML = "<image src='/dist/cab/icon_plugoff.gif' "
+                        + " border=0 style='cursor:hand' title='수신기록보기' >";
+                    // +" onclick=frmGo('수신기록보기페이지.asp','detail')  >"
+                    /*" onclick='form_submit(\"/login.do\", null)' >"*/
+                    //console.log('장치연결 안됨');
+                } catch (e) {
+                    //console.log(e);
+                    alert(e);
+                }
+            } else {
+                try {
+                    document.all["id_ctimsgarea"].innerHTML = "<image src='/dist/cab/icon_plugon.gif' "
+                        + " width=12 height=11 border=0 style='cursor:hand' title='수신기록보기' >"
+                    // +" onclick=frmGo('수신기록보기페이지','detail')  >"
+                    /*+ " onclick ='form_submit(\"/login.do\", null)'>"*/;
+                } catch (e) {
+                    //console.log(e);
+                    alert(e);
+                }
+            }
+        } catch (e) {
+            //console.log(e);
+            alert(e);
+            ins_yn();
+        }
+    }
+</script>
+
+<script type="text/javascript">
+    function caller_close() {
+        //console.log('-----------------caller_close()');
+        setTimeout(popup_close(), 100);  //1초후 re() 함수 실행...
+    }
+
+    function popup_close() {
+        //console.log('-----------------popup_close()');
+        try {
+            wcti.close();  //문서 새로고침...
+        } catch (e) {
+            //console.log("Error :: ");
+            //console.log(e);
+        }
+    }
+
+    function sendTEL(str) {
+        //console.log('-----------------sendTEL()');
+        try {
+            var n = form2.USBDial.phoneCallDirect(str);
+            //console.log(n);
+            if (n == 0) alert('장치연결을 확인해 주세요.');
+            else if (n == 3) alert('걸려오는 전화 처리하는 중 입니다.');
+        } catch (e) {
+            //console.log(e);
+        }
+        /*caller_close();*/
+    }
+</script>
+
+<script type="text/javascript">
+    <!--
+    function Canceltel() {
+        //console.log('-----------------Canceltel()');
+        winCtiCaller.close();
+    }
+
+    //-->
+</script>
+<script for="USBDial" event="PhoneCall(strPhoneNum)">
+    //console.log('-----------------PhoneCall');
+    //console.log(strPhoneNum);
+</script>
+
+<script for="USBDial" event="CidMsgRx(cidmsg,blocknum)">
+    //console.log('-----------------CidMsgRx');
+    //console.log(cidmsg);
+    //발신자 번호 수신
+    try {
+        var phonetime = new Date().format('yyyyMMddHHmmss');
+        var aaa = cidmsg.length;
+        var cid_len = cidmsg.substring(4, aaa);
+        // 여기서 전송한 페이지가 팝업으로 뜨면서 번호가 뜹니다.
+        var url = "/getCall.do?phoneNum=" + replaceAll(cid_len, "-", "") + "&phonetime=" + phonetime;
+        // var url = "/getCall.do?phoneNum=01012341234&phonetime=" + phonetime;
+        /* wcti = modeless_win(url, 620, 700, "no"); */
+        var popupX = (document.body.offsetWidth / 2) - (400 / 2);
+        var popupY = (document.body.offsetHeight / 2) - (700 / 2);
+        wcti = window.open(url, "", 'status=no, resizable=no, height=700, width=500, left=' + popupX + ', top=' + popupY);
+        wcti.focus();
+    } catch (e) {
+        alert(e)
+    }
+</script>
+
+<script for="USBDial" event="HookStateChange(hookState , block )">
+    //console.log('-----------------HookStateChange');
+    /*cidCallerObj.hookState = hookState;
+
+    var hk = ""
+    if(hookState[hookState.length - 1] == "1") hk = "수화기 듦";
+    else hk = "수화기 내려놈"
+
+    console.log("---------------------------------------");
+    console.log("hookState (후크의 상태만 변화) : " + hk);
+    console.log("callmap (전화 정보) : " + JSON.stringify(callMap));
+    console.log("ringBool : " + ringBool);
+
+    $.post('/insertCallHistory.do', JSON.parse(JSON.stringify(callMap)), function (data) {
+        //console.log(data);
+    }, 'json').fail(function (error) {
+        alert(error.status);
+    });*/
+    ringBool = false;
+    callMap = {};
+
+
+    // 잔화가 와서 받았는가 확인~
+    /*if (hookState[hookState.length - 1] == 1 && (callMap.code == 200 || callMap.code == 902) && ringBool) {
+        callMap["status"] = 0;
+        $.post('/insertCallHistory.do', JSON.parse(JSON.stringify(callMap)), function (data) {
+            //console.log(data);
+        }, 'json').fail(function (error) {
+            alert(error.status);
+        });
+    } else if (hookState[hookState.length - 1] == 0 && ringBool) { // 전화가 와서 창이뜨고, 수화기를 든 상태
+        //console.log('Hook On and Ring True');
+        var regPhone = /(01[0|1|6|9|7])(\d{3}|\d{4})(\d{4}$)/g;
+        // 휴대폰 번호만 골라서 문자발송 한다.
+        if (callMap.code == 902 && $('#s-info-corpNum').val() !== '' && regPhone.test(callMap.phone)) {
+            sendMessage(17); // 메세지 발송 함수
+        }
+        ringBool = false;
+        callMap = {};
+    } else {
+        //console.log('ELSE');
+        ringBool = false;
+        callMap = {};
+    }*/
+    /*cidCallerObjFunction(hookState, block);*/
+</script>
+
+<script for="USBDial" event="RingEvent(strRing , block)">
+    //console.log('-----------------RingEvent');
+    //console.log(strRing);
+
+    /*console.log("callmap (전화 정보) : " + JSON.stringify(callMap));
+    console.log("ringBool : " + ringBool);
+
+    console.log("str ring : " + strRing[strRing.length - 1]);
+    callMap["status"] = '1';*/
+    /*$.post('/insertCallHistory.do', JSON.parse(JSON.stringify(callMap)), function (data) {
+        //console.log(data);
+    }, 'json').fail(function (error) {
+        alert(error.status);
+    });*/
+
+
+    /*if (strRing[strRing.length - 1] == 1) { // 전화가 왔다.
+        ringBool = true;
+    } else { // 부재중
+        if(callMap.code != 900){
+            callMap["status"] = '1';
+            $.post('/insertCallHistory.do', JSON.parse(JSON.stringify(callMap)), function (data) {
+                //console.log(data);
+            }, 'json').fail(function (error) {
+                alert(error.status);
+            });
+        }
+        ringBool = false;
+        callMap = {};
+    }*/
+    ringBool = false;
+    callMap = {};
+</script>
+
+<script type="text/javascript">
+    function cidCallerObjFunction(hookState, block) {
+        //console.log('-----------------cidCallerObjFunction');
+        cidCallerObj.hookState = hookState;
+        return;
+        try {
+            eventstr[g_write_prt] = "Hookchange: Block:" + String.fromCharCode(block + 0x30) + " " + hookState;
+            g_write_prt = g_write_prt + 1;
+            if (g_write_prt > 49) g_write_prt = 0;
+        } catch (e) {
+            alert(e + " .. HookStateChange 이벤트오류임~")
+        }
+    }
+</script>
+
+
+<script for="USBDial" event="DialReady()">
+    //console.log('-----------------DialReady');
+    try {
+    } catch (e) {
+        alert(e + " .. D 이벤트오류임~")
+    }
+</script>
+
+<script for="USBDial" event="DeviceChange()">
+    //console.log('-----------------DeviceChange');
+    // 장치 연결/분리상태에 따라 자동으로 인식되도록 추가함. 2019-05-23
+    connec();
+    try {
+    } catch (e) {
+        alert(e + " .. D 이벤트오류임~");
+    }
+</script>
+
+<script for="USBDial" event="transferCall(innerNum)">
+    //console.log('-----------------transferCall');
+    //동료에게 연결
+    //innerNum-->내선번호 4자리까지 가능
+</script>
+
+<script type="text/javascript">
+    <!--
+    var winCtiCaller;
+
+    function modeless_win(src, w, h, re) {
+        /* 페이지 이동시 창이 닫힘으로 사용권장 x */
+        return window.showModelessDialog(src, window,
+            "dialogWidth:" + w + "px;dialogHeight:" + h + "px;status:no;edge;raised;resizable:" + re + ";help:no");
+    }
+
+    function divCallShow(str) {
+        //console.log('-----------------divCallShow()');
+        try {
+            var url = "/makeCall.do?phone=" + str + "&tmp=" + (new Date()).getTime();
+            winCtiCaller = modeless_win(url, 300, 120, "no");
+            /*winCtiCaller = window.open(url, "", "width=300,height=120");*/
+            winCtiCaller.focus();
+        } catch (e) {
+            alert(e);
+        }
+        return;
+    }
+    //-->
+</script>
+<script>
+    function sendMessage(type) {
+        var senderData = getSenderNumberList();
+        var sender = '';
+        if (senderData.code == 200) {
+            if (senderData.SenderNumberList.length > 0) {
+                /* 발신번호가 존재한다 */
+                $.each(senderData.SenderNumberList, function (e, v) {
+                    if (v.state === 1) {      // 등록 상태  0:대기, 1:등록, 2:취소
+                        sender = v.number;
+                        if (v.representYN) return false; // 등록되고 대표번호이면 반복 종료.
+                    }
+                });
+                //console.log("sender : " + sender);
+                if (sender !== '') {
+                    var autoMessage = selectAutoMessage(type);
+                    //content = selectThanksContent();
+                    if (autoMessage != null) {
+                        var method = caseIgnoreComparison(autoMessage.method, 'sms') ? 0 : 1;
+                        var reserveDT = new Date();
+                        caseIgnoreComparison(autoMessage.send_time, 'now') ? reserveDT = null : reserveDT.setMinutes(reserveDT.getMinutes() + autoMessage.send_time);
+                        var data = {
+                            sender: sender,
+                            receiver: callMap.phone,
+                            content: autoMessage.content,
+                            method: method,
+                            reserveDT: reserveDT != null ? reserveDT.format('yyyy-MM-dd HH:mm:ss') : null
+                        };
+                        $.ajax({
+                            type: 'POST',
+                            url: '/MessageService/sendXMS.do',
+                            dataType: 'json',
+                            data: data,
+                            async: false,
+                            success: function (data) {
+                                if (data.code == 200) {
+                                    //console.log(data);
+                                    var a = {
+                                        method: method,
+                                        send_count: 1,
+                                        receipt_num: data.Result,
+                                        status: 0
+                                    };
+                                    insertMessageHistory(a);
+                                } else if (data.code == 900) {
+                                    //console.log('적재실패');
+                                } else {
+                                    //console.log(data.e);
+                                }
+                            },
+                            error: function (request, status, error) {
+                                alert('오류가 발생했습니다. 잠시후 다시 시도해주십시오. ::' + request.status);
+                                //console.log("request:code : " + request.status + "\nmessage:" + request.responseText + "\nerror : " + error);
+                            }
+                        });
+                    } else {console.log();} //console.log('자동발송 설정 안함 혹은 미사용 상태');
+                }
+            }
+        }
+    }
+</script>

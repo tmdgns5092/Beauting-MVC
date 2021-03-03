@@ -1,0 +1,10 @@
+<%@ page pageEncoding="utf-8" %>
+<!-- Tell the browser to be responsive to screen width -->
+<meta content="Use Nutz Framework with beetl template engine to build AdminLTE2" name="description"/>
+<meta content="elkan1788#gmail.com" name="author"/>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.css">
+<link href="${pageContext.request.contextPath}/static/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Noto+Sans+KR|Noto+Serif+KR&display=swap" rel="stylesheet">
+<link href="${pageContext.request.contextPath}/static/plugins/mdb/css/style.css" rel="stylesheet">

@@ -1,0 +1,52 @@
+<%@ page pageEncoding="utf-8" %>
+<div class="box-body box-content">
+    <%-- 제품 선택 --%>
+    <button class="box-content-btn" onclick="productCall(this)"><i class="fas fa-plus"></i>제품 추가</button>
+    <%-- 제품 모달 --%>
+    <div class="modal fade" id="product-modal" role="dialog">
+        <div class="modal-dialog service-modal">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <button class="close-btn02" data-dismiss="modal"><i class="fas fa-times"></i></button>
+                    <h2>제품추가</h2>
+                    <%-- 직원 --%>
+                    <div name="product-detail-div" id="product-detail-div">
+                        <input type="hidden" id="product_empl_idx1" value=""/>
+                        <input type="hidden" id="product_empl_name1" value=""/>
+                        <input type="hidden" id="product_empl_idx2" value=""/>
+                        <input type="hidden" id="product_empl_name2" value=""/>
+                        <div class="service-modal-content">
+                            <h4>1) 직원 선택</h4>
+                        </div>
+                        <div name="product-employee-table" id="product-employee-table"></div>
+                        <%--<table class="table table-bordered text-center" name="product-employee-table" id="product-employee-table"></table>--%>
+                    </div>
+                    <%-- 제품 카테고리 --%>
+                    <div name="product-cate-div">
+                        <div class="service-modal-content">
+                            <h4>2) 상위 카테고리 선택</h4>
+                        </div>
+                        <div name="product-cate-table"></div>
+                        <%--<table class="table table-bordered text-center" name="product-cate-table"></table>--%>
+                    </div>
+                    <%-- 제품 디테일 --%>
+                        <div name="product-detail-div">
+                            <div class="service-modal-content">
+                                <h4>3) 하위 카테고리 선택</h4>
+                            </div>
+                            <div name="product-detail-table" id="product-detail-table"></div>
+                        <%--<table class="table table-bordered text-center" name="product-detail-table" id="product-detail-table"></table>--%>
+                    </div>
+                    <%-- 제품 담기 --%>
+                    <div class="check-product"></div>
+                    <div class="content02-save mt-15">
+                        <button type="button" onclick="appendProduct(this)">추가</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%-- /.제품 모달 --%>
+    <table class="table text-center product-sale-main-table"></table>
+</div>

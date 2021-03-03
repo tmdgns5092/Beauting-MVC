@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="client">
+    <!--Client All Count-->
+    <select id="selectAllClientsList" parameterType="hashmap" resultType="hashmap">
+        SELECT COUNT(*) as count
+        FROM ${id}_client
+        WHERE EXISTS
+        (SELECT idx FROM ${id}_client)
+        <choose>
+            <when test="sort.equals('name_search')">AND name LIKE '%${data}%'</when>
+            <when test="sort.equals('code_search')">AND code LIKE '%${data}%'</when>
+            <when test="sort.equals('phone_search')">AND phone LIKE '%${data}%'</when>
+            <when test="sort.equals('rank_search')">AND rank LIKE '%${data}%'</when>
+            <when test="sort.equals('visit_search')">AND visit LIKE '%${data}%'</when>
+            <when test="sort.equals('all_search')">
+                AND
+                code LIKE '%${data}%' OR
+                name LIKE '%${data}%' OR
+                rank LIKE '%${data}%' OR
+                phone LIKE '%${data}%' OR
+                total_pay LIKE '%${data}%' OR
+                visit LIKE '%${data}%'
+            </when>
+            <otherwise></otherwise>
+        </choose>
+    </select>
+    <!--Paging & Sorting Clients-->
+    <select id="selectSortingAndPagingClients" parameterType="hashmap" resultType="hashmap">
+        SELECT idx, name, DATE_FORMAT(join_date, '%Y-%m-%d') AS join_date, memo, birth, code, rank, status, phone, total_pay, miss_cost,
+          point, visit, kind, sum_array_cells(prepaid->'$[*].cost') AS total_prepaid, sms_check
+        FROM ${id}_client
+        WHERE EXISTS
+        (SELECT idx FROM ${id}_client)
+        <choose>
+            <when test="sort.equals('name_search')">AND name LIKE '%${data}%'</when>
+            <when test="sort.equals('code_search')">AND code LIKE '%${data}%'</when>
+            <when test="sort.equals('phone_search')">AND phone LIKE '%${data}%'</when>
+            <when test="sort.equals('rank_search')">AND rank LIKE '%${data}%'</when>
+            <when test="sort.equals('visit_search')">AND visit LIKE '%${data}%'</when>
+            <when test="sort.equals('all_search')">
+                AND
+                code LIKE '%${data}%' OR
+                name LIKE '%${data}%' OR
+                rank LIKE '%${data}%' OR
+                phone LIKE '%${data}%' OR
+                total_pay LIKE '%${data}%' OR
+                visit LIKE '%${data}%'
+            </when>
+            <otherwise></otherwise>
+        </choose>
+        LIMIT #{start_idx}, #{end_idx}
+    </select>
+    <!-- 최근 거래 내역 -->
+    <select id="selectClientSalesAjax" parameterType="hashmap" resultType="hashmap">
+        SELECT DATE_FORMAT(b.date, "%Y.%m.%d") as date, b.sale_resource, b.status, b.refund_name, b.total_cost, b.total_exhaust, b.total_miss_cost, b.memo
+        FROM (
+          SELECT idx
+          FROM ${shop_id}_sales
+          WHERE client_idx = ${idx} and status <![CDATA[ < ]]>  4
+        ) a
+        JOIN ${shop_id}_sales b
+        ON a.idx = b.idx
+        ORDER BY b.date DESC LIMIT 5;
+    </select>
+    <!-- 선택한 고객 정보 Select -->
+    <select id="selectClientInfoAjax" parameterType="hashmap" resultType="hashmap">
+        SELECT b.idx, rank, visit, SPLIT(birth, '-', 1) AS year, SPLIT(b.birth, '-', 2) AS month, SPLIT(b.birth, '-', 3) AS day, status,
+              sms_check, name, code, phone, total_pay, point, prepaid, ticket, product, miss_cost, memo, sum_array_cells(prepaid->'$[*].cost') AS total_prepaid
+        FROM (
+            SELECT idx
+            FROM ${shop_id}_client
+            WHERE idx = #{idx}
+        ) a
+        JOIN ${shop_id}_client b
+        ON a.idx = b.idx;
+    </select>
+    <!-- 고객 정보 수정 -->
+    <update id="updateClientInfoAjax">
+        UPDATE ${shop_id}_client
+        SET birth = #{birth},
+            code = #{code},
+            name = #{name},
+            rank = #{rank},
+            visit = #{visit},
+            memo = #{memo},
+            status = #{status},
+            phone = #{phone},
+            point = #{point},
+            prepaid = #{prepaid},
+            ticket = #{ticket},
+            product = #{product},
+            miss_cost = #{miss_cost},
+            total_pay = #{total_pay},
+            sms_check = #{sms_check}
+        WHERE idx = #{idx}
+    </update>
+    <!-- 선불권 수정 이력 저장 -->
+    <insert id="discriminationPrepaid">
+        INSERT INTO ${shop_id}_sales (shop_idx, client_idx, services_type, status, sale_resource)
+        VALUES (${shop_idx}, ${idx}, 1, 4, #{discriminationPrepaid}
+        )
+    </insert>
+    <!-- 횟수권 수정 이력 저장 -->
+    <insert id="discriminationTicket">
+        INSERT INTO ${shop_id}_sales (shop_idx, client_idx, services_type, status, sale_resource)
+        VALUES (${shop_idx}, ${idx}, 2, 4, #{discriminationTicket})
+    </insert>
+    <!-- 선불권 삭제 이력 저장 -->
+    <insert id="deletePrepaid">
+        INSERT INTO ${shop_id}_sales (shop_idx, client_idx, services_type, status, sale_resource)
+        VALUES (${shop_idx}, ${idx}, 1, 5, #{deletePrepaid})
+    </insert>
+    <!-- 횟수권 삭제 이력 저장 -->
+    <insert id="deleteTicket">
+        INSERT INTO ${shop_id}_sales (shop_idx, client_idx, services_type, status, sale_resource)
+        VALUES (${shop_idx}, ${idx}, 2, 5, #{deleteTicket})
+    </insert>
+    <!-- Client Code Auto Create -->
+    <select id="selectClientLargestNumber" parameterType="hashmap" resultType="hashmap">
+            SELECT IFNULL(MAX(cast(code as UNSIGNED) + 1), -1) AS maxNumber
+            FROM ${id}_client
+            WHERE EXISTS
+            (SELECT idx FROM ${id}_client)
+   </select>
+    <!--Phone Number Overlap Check-->
+    <select id="selectOverCheckFromPhone" parameterType="hashmap" resultType="hashmap">
+            SELECT IFNULL(idx, -1) AS overCheck
+            FROM ${shopId}_client
+            WHERE EXISTS
+            (SELECT idx FROM ${shopId}_client) AND
+            phone = #{phone}
+   </select>
+    <!-- 고객 코드 중복 확인 -->
+    <select id="selectOverCheckFromCode" parameterType="hashmap" resultType="hashmap">
+            SELECT NULLIF(idx, 0) AS check_idx
+            FROM ${id}_client
+            WHERE code = #{code}
+            LIMIT 1
+   </select>
+    <!-- 신규 고객 등록 -->
+    <insert id="insertNewClient" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+         INSERT INTO ${id}_client (code, name, phone, birth, rank, visit, memo, shop_idx, status, prepaid, ticket, product, sms_check)
+         VALUES (#{code}, #{name},#{phone},'${y}-${m}-${d}',#{rank},#{visit},#{memo},#{shopIdx},#{member}, '[]', '[]', '[]', #{sms_check})
+   </insert>
+    <!-- 회원권 Detail Select -->
+    <select id="selectPrepaidDetail" parameterType="hashmap" resultType="hashmap">
+            SELECT *
+            FROM services
+            WHERE shop_idx = ${idx} AND type = 1 AND name IS NOT NULL
+   </select>
+    <!-- 티켓 Category Select -->
+    <select id="selectTicketCategory" parameterType="hashmap" resultType="hashmap">
+            SELECT *
+            FROM services
+            WHERE shop_idx = ${idx} AND type = 2 AND name IS NULL
+   </select>
+    <!-- 티켓 Detail Select -->
+    <select id="selectTicketDetail" parameterType="hashmap" resultType="hashmap">
+            SELECT *
+            FROM services
+            WHERE shop_idx = ${idx} AND type = 2 AND name IS NOT NULL
+   </select>
+    <!-- 고객 정보 (선불잔액 잔여 포인트 미수금) 불러오기 -->
+    <select id="selectClientPrePointMiss" parameterType="hashmap" resultType="hashmap">
+            SELECT
+                FORMAT(CAST(sum_array_cells(json_extract(b.prepaid, '$[*].cost')) AS UNSIGNED), 0) AS prepaid,
+                b.prepaid AS prepaidMap,
+                b.ticket AS ticketMap,
+                b.point,
+                b.miss_cost
+            FROM (
+              SELECT idx
+              FROM ${shop_id}_client
+              WHERE idx = #{client_idx}
+            ) a
+            JOIN ${shop_id}_client b
+            ON a.idx = b.idx
+   </select>
+    <!-- 고객 메모 업데이트 -->
+    <update id="updateClientMemo">
+        UPDATE ${shop_id}_client
+        SET memo = #{memo}
+        WHERE idx = #{client_idx}
+    </update>
+    <!-- 고객 조회 for idx-->
+    <select id="selectClientForIdx" parameterType="hashmap" resultType="hashmap">
+        SELECT *
+        FROM ${shop_id}_client
+        WHERE idx = ${idx}
+    </select>
+    <!-- 고객 조회 for code-->
+    <select id="selectClientForCode" parameterType="hashmap" resultType="hashmap">
+        SELECT *
+        FROM ${shop_id}_client
+        WHERE code = ${code} AND code != ${origin_code}
+    </select>
+    <select id="selectClientCodeSemiAuto" parameterType="hashmap" resultType="hashmap">
+        SELECT MAX(cast(code as UNSIGNED)) + 1 AS max_code
+        FROM ${shop_id}_client
+        WHERE code like '${code}%'
+    </select>
+
+    <!-- 고객 정보 가져오기 -->
+    <select id="selectThisClient" parameterType="hashmap" resultType="hashmap">
+        SELECT *
+        FROM ${shop_id}_client
+        WHERE idx = ${idx}
+    </select>
+</mapper>

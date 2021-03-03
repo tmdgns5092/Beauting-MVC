@@ -1,0 +1,6 @@
+<%@ page pageEncoding="utf-8" %>
+<div class="box-body">
+    <%-- 직원 선택 --%>
+    <div class="btn-group" role="group" aria-label="..." style="flex: 1; text-align: right;" name="empl-body"></div>
+    <table class="table table-bordered text-center" name="empl-table"></table>
+</div>

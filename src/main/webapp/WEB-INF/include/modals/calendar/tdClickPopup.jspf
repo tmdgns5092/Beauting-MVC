@@ -1,0 +1,399 @@
+<%@ page pageEncoding="utf-8" %>
+<%-- 예약상태 --%>
+<div class="popupLayer1">
+    <%-- 모바일 고객 정보 --%>
+    <div name="mobile-client-info" class="pc-none m-popup-clientinfo">
+        <table class="m-popup-table">
+            <thead>
+            <tr>
+                <th width="36%">이름</th>
+                <th><p name="name"></p></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>잔액 금액</td>
+                <td><p name="total_prepaid"></p></td>
+            </tr>
+            <tr>
+                <td>포인트</td>
+                <td><p name="point"></p></td>
+            </tr>
+            <tr>
+                <td>미수금</td>
+                <td><p name="miss_cost"></p></td>
+            </tr>
+            <tr>
+                <td>총결제금액</td>
+                <td><p name="total_pay"></p></td>
+            </tr>
+            </tbody>
+        </table>
+        <div name="client_memo"></div>
+        <%--고객번호  : <p name="code"></p>--%>
+        <%--회원구분  : <p name="status"></p>--%>
+        <%--분류  : <p name="rank"></p>--%>
+        <%--휴대폰  : <p name="phone"></p>--%>
+        <%--생일  : <p name="birthday"></p>--%>
+        <%--경로  : <p name="visit"></p>--%>
+    </div>
+    <ul>
+        <li href="javascript:void(0);" name="res_payment" id="td_salse" class="m-none" >계산</li>
+        <%--<li href="javascript:void(0);" id="td_salse_complete">계산 완료</li>--%>
+        <li href="javascript:void(0);" id="td_mf_reservation">예약 수정</li>
+        <li href="javascript:void(0);" id="td_noshow">예약 불이행</li>
+        <li href="javascript:void(0);" id="td_rm_reservation">예약 취소</li>
+        <li href="javascript:void(0);" id="td_client_info1" class="m-none" >고객 정보</li>
+        <li href="javascript:void(0);" id="td_client_message1" style="display: none;" class="m-none" >문자 발송</li>
+        <% if (userAgent.indexOf("Trident") > 0 || userAgent.indexOf("MSIE") > 0) { %>
+        <li href="javascript:void(0);" id="td_client_makeCall">전화 걸기</li>
+        <% }%>
+        <li onClick="closeLayer1(this)">닫기</li>
+    </ul>
+</div>
+<%-- 예약 불이행 상태 --%>
+<div class="popupLayer2">
+    <%-- 모바일 고객 정보 --%>
+    <div name="mobile-client-info" class="pc-none m-popup-clientinfo">
+        <table class="m-popup-table">
+            <thead>
+            <tr>
+                <th width="36%">이름</th>
+                <th><p name="name"></p></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>잔액 금액</td>
+                <td><p name="total_prepaid"></p></td>
+            </tr>
+            <tr>
+                <td>포인트</td>
+                <td><p name="point"></p></td>
+            </tr>
+            <tr>
+                <td>미수금</td>
+                <td><p name="miss_cost"></p></td>
+            </tr>
+            <tr>
+                <td>총결제금액</td>
+                <td><p name="total_pay"></p></td>
+            </tr>
+            </tbody>
+        </table>
+        <div name="client_memo"></div>
+        <%--잔액 금액  : <p name="total_prepaid"></p>--%>
+        <%--총결제금액  : <p name="total_pay"></p>--%>
+        <%--포인트  : <p name="point"></p>--%>
+        <%--미수금  : <p name="miss_cost"></p>--%>
+        <%--이름  : <p name="name"></p>--%>
+        <%--고객번호  : <p name="code"></p>--%>
+        <%--회원구분  : <p name="status"></p>--%>
+        <%--분류  : <p name="rank"></p>--%>
+        <%--휴대폰  : <p name="phone"></p>--%>
+        <%--생일  : <p name="birthday"></p>--%>
+        <%--경로  : <p name="visit"></p>--%>
+    </div>
+    <ul>
+        <li href="javascript:void(0);" id="td_noshow_cancel">불이행 취소</li>
+        <li href="javascript:void(0);" id="td_client_info2" class="m-none" >고객 정보</li>
+        <li href="javascript:void(0);" id="td_client_message2" class="m-none"  style="display: none;">문자 발송</li>
+        <li onClick="closeLayer2(this)">닫기</li>
+    </ul>
+</div>
+
+<%-- 예약 판매 상태 --%>
+<div class="popupLayer3">
+    <%-- 모바일 고객 정보 --%>
+    <div name="mobile-client-info" class="pc-none m-popup-clientinfo">
+        <table class="m-popup-table">
+            <thead>
+            <tr>
+                <th width="36%">이름</th>
+                <th><p name="name"></p></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>잔액 금액</td>
+                <td><p name="total_prepaid"></p></td>
+            </tr>
+            <tr>
+                <td>포인트</td>
+                <td><p name="point"></p></td>
+            </tr>
+            <tr>
+                <td>미수금</td>
+                <td><p name="miss_cost"></p></td>
+            </tr>
+            <tr>
+                <td>총결제금액</td>
+                <td><p name="total_pay"></p></td>
+            </tr>
+            </tbody>
+        </table>
+        <div name="client_memo"></div>
+        <%--잔액 금액  : <p name="total_prepaid"></p>--%>
+        <%--총결제금액  : <p name="total_pay"></p>--%>
+        <%--포인트  : <p name="point"></p>--%>
+        <%--미수금  : <p name="miss_cost"></p>--%>
+        <%--이름  : <p name="name"></p>--%>
+        <%--고객번호  : <p name="code"></p>--%>
+        <%--회원구분  : <p name="status"></p>--%>
+        <%--분류  : <p name="rank"></p>--%>
+        <%--휴대폰  : <p name="phone"></p>--%>
+        <%--생일  : <p name="birthday"></p>--%>
+        <%--경로  : <p name="visit"></p>--%>
+    </div>
+    <ul>
+    <li href="javascript:void(0);" id="cancel-sales">판매 취소</li>
+        <li href="javascript:void(0);" id="td_client_info3" class="m-none" >고객 정보</li>
+        <li href="javascript:void(0);" id="td_client_message3" class="m-none" style="display: none;">문자 발송</li>
+        <li onClick="closeLayer3(this)">닫기</li>
+    </ul>
+</div>
+
+<%-- script --%>
+<script>
+    var c_info;
+
+    /* 닫기 */
+    function closeLayer1(obj) {
+        $(obj).parent().parent().hide();
+    }
+
+    <%-- 전화걸기 --%>
+    // $(function () {
+    //     /* 전화 걸기 클릭시 전화걸기 창 불러오기 */
+    //     $(document).on('click', '#td_client_makeCall', function () {
+    //         divCallShow(phone);
+    //     });
+    // });
+    <%-- 예약 메뉴 팝업 --%>
+    $(function () {
+        /* 클릭 클릭시 클릭을 클릭한 위치 근처에 레이어가 나타난다. */
+        $(document).on('click', '.td-reservation-popup', function (e) {
+            c_info = {};
+            c_info["phone"] = $(this).find('div > input[name=popup-msg-phone]').val();
+            c_info["idx"] = $(this).find('div > input[name=popup-msg-idx]').val();
+            var res_idx = $(this).closest("td").attr("data-value");
+            mobileClientIntoCall(res_idx, 1);
+            if (c_info.idx != 0) {
+                $('#td_client_message1').css('display', '');
+                c_info["sms_check"] = $(this).find('div > input[name=popup-msg-sms-check]').val();
+            } else $('#td_client_message1').css('display', 'none');
+
+            var sWidth = window.innerWidth;
+            var sHeight = window.innerHeight;
+
+            var oWidth = $('.popupLayer1').width();
+            var oHeight = $('.popupLayer1').height();
+
+            // 레이어가 나타날 위치를 셋팅한다.
+            var divLeft = e.clientX - 20;
+            var divTop = e.clientY - 15;
+
+            // 레이어가 화면 크기를 벗어나면 위치를 바꾸어 배치한다.
+            if (divLeft + oWidth > sWidth) divLeft -= oWidth;
+            if (divTop + oHeight > sHeight) divTop -= oHeight;
+
+            // 레이어 위치를 바꾸었더니 상단기준점(0,0) 밖으로 벗어난다면 상단기준점(0,0)에 배치하자.
+            if (divLeft < 0) divLeft = 0;
+            if (divTop < 0) divTop = 0;
+
+            $('.popupLayer1').css({
+                "top": divTop,
+                "left": divLeft,
+                "position": "absolute"
+            }).show();
+        });
+
+    });
+
+    /* 예약 항목 팝업 띄우기 */
+    $(document).on('click', '.td-reservation-popup', function () {
+        // $(".reservation-td").click(function(){
+        var reservation_td_idx = $(this).attr('data-value');
+        //console.log("res idx : " + reservation_td_idx);
+
+        $('#td_salse').attr('data-value', reservation_td_idx);
+        // $('#td_salse_complete').attr('data-value', reservation_td_idx);
+        $('#td_mf_reservation').attr('data-value', reservation_td_idx);
+        $('#td_noshow').attr('data-value', reservation_td_idx);
+        $('#td_client_info1').attr('data-value', reservation_td_idx);
+        $('#td_client_info2').attr('data-value', reservation_td_idx);
+        $('#td_client_info3').attr('data-value', reservation_td_idx);
+        $('#td_rm_reservation').attr('data-value', reservation_td_idx);
+
+        $(".popupLayer1").stop().fadeToggle(200);
+        return false; //중요
+    });
+</script>
+<%-- 불이행 메뉴 팝업 --%>
+<script>
+    function closeLayer2(obj) {
+        $(obj).parent().parent().hide();
+    }
+
+    $(function () {
+        /* 클릭 클릭시 클릭을 클릭한 위치 근처에 레이어가 나타난다. */
+        $(document).on('click', '.reservation-noshow', function (e) {
+            // $('.reservation-td').click(function(e) {
+            c_info = {};
+            c_info["phone"] = $(this).find('div > input[name=popup-msg-phone]').val();
+            c_info["idx"] = $(this).find('div > input[name=popup-msg-idx]').val();
+            var res_idx = $(this).closest("td").attr("data-value");
+            mobileClientIntoCall(res_idx, 2);
+            if (c_info.idx != 0) {
+                $('#td_client_message2').css('display', '');
+                c_info["sms_check"] = $(this).find('div > input[name=popup-msg-sms-check]').val();
+            } else $('#td_client_message2').css('display', 'none');
+
+            var sWidth = window.innerWidth;
+            var sHeight = window.innerHeight;
+
+            var oWidth = $('.popupLayer2').width();
+            var oHeight = $('.popupLayer2').height();
+
+            // 레이어가 나타날 위치를 셋팅한다.
+            var divLeft = e.clientX - 20;
+            var divTop = e.clientY - 15;
+
+            // 레이어가 화면 크기를 벗어나면 위치를 바꾸어 배치한다.
+            if (divLeft + oWidth > sWidth) divLeft -= oWidth;
+            if (divTop + oHeight > sHeight) divTop -= oHeight;
+
+            // 레이어 위치를 바꾸었더니 상단기준점(0,0) 밖으로 벗어난다면 상단기준점(0,0)에 배치하자.
+            if (divLeft < 0) divLeft = 0;
+            if (divTop < 0) divTop = 0;
+
+            $('.popupLayer2').css({
+                "top": divTop,
+                "left": divLeft,
+                "position": "absolute"
+            }).show();
+        });
+
+    });
+
+    $(document).on('click', '.reservation-noshow', function () {
+        // $(".reservation-td").click(function(){
+        var reservation_td_idx = $(this).attr('data-value');
+
+        $('#td_noshow_cancel').attr('data-value', reservation_td_idx);
+        $('#td_client_info2').attr('data-value', reservation_td_idx);
+
+        $(".popupLayer2").stop().fadeToggle(200);
+        return false; //중요
+    });
+</script>
+
+<%-- 판매 완료 메뉴 팝업 --%>
+<script>
+    function closeLayer3(obj) {
+        $(obj).parent().parent().hide();
+    }
+
+    $(function () {
+        /* 클릭 클릭시 클릭을 클릭한 위치 근처에 레이어가 나타난다. */
+        $(document).on('click', '.reservation-calculation-complete', function (e) {
+            // $('.reservation-td').click(function(e) {
+            c_info = {};
+            c_info["phone"] = $(this).find('div > input[name=popup-msg-phone]').val();
+            c_info["idx"] = $(this).find('div > input[name=popup-msg-idx]').val();
+            var res_idx = $(this).closest("td").attr("data-value");
+            mobileClientIntoCall(res_idx, 3);
+            if (c_info.idx != 0) {
+                $('#td_client_message3').css('display', '');
+                c_info["sms_check"] = $(this).find('div > input[name=popup-msg-sms-check]').val();
+            } else $('#td_client_message3').css('display', 'none');
+
+            var sWidth = window.innerWidth;
+            var sHeight = window.innerHeight;
+
+            var oWidth = $('.popupLayer3').width();
+            var oHeight = $('.popupLayer3').height();
+
+            // 레이어가 나타날 위치를 셋팅한다.
+            var divLeft = e.clientX - 20;
+            var divTop = e.clientY - 15;
+
+            // 레이어가 화면 크기를 벗어나면 위치를 바꾸어 배치한다.
+            if (divLeft + oWidth > sWidth) divLeft -= oWidth;
+            if (divTop + oHeight > sHeight) divTop -= oHeight;
+
+            // 레이어 위치를 바꾸었더니 상단기준점(0,0) 밖으로 벗어난다면 상단기준점(0,0)에 배치하자.
+            if (divLeft < 0) divLeft = 0;
+            if (divTop < 0) divTop = 0;
+
+            $('.popupLayer3').css({
+                "top": divTop,
+                "left": divLeft,
+                "position": "absolute"
+            }).show();
+        });
+
+    });
+
+    $(document).on('click', '.reservation-calculation-complete', function () {
+        // $(".reservation-td").click(function(){
+        var reservation_td_idx = $(this).attr('data-value');
+
+        $('#cancel-sales').attr('data-value', reservation_td_idx);
+        $('#td_client_info3').attr('data-value', reservation_td_idx);
+
+        $(".popupLayer3").stop().fadeToggle(200);
+        return false; //중요
+    });
+
+
+    function mobileClientIntoCall(res_idx, type) {
+        var filter = "win16|win32|win64|mac|macintel";
+        var client_info = "", client_data = "";
+        if (navigator.platform) {
+            // if (filter.indexOf(navigator.platform.toLowerCase()) < 0) {     // 모바일 접속
+                client_data = submitAjax("/Reservation/clientInfoIdxCall.do", {res_idx : res_idx});
+
+                // 등록 고객 ( Client idx 있음)
+                if(client_data.type == 0){
+                    console.log("등록 고객");
+                    client_info = submitAjax("/Client/selectClientInfoAjax.do", {idx : client_data.client_idx});
+                    console.log("client info : " + JSON.stringify(client_info));
+                    var target_class = "";
+
+
+                    if(type == 1) target_class = $(".popupLayer1");
+                    else if(type == 2) target_class = $(".popupLayer2");
+                    else if(type == 3) target_class = $(".popupLayer3");
+
+                    /* div 보이기 */
+                    $('.popupLayer1').find("div[name=mobile-client-info]").hide();
+                    $('.popupLayer2').find("div[name=mobile-client-info]").hide();
+                    $('.popupLayer3').find("div[name=mobile-client-info]").hide();
+                    target_class.find("div[name=mobile-client-info]").show();
+
+                    /* 고객 정보 출력 */
+                    var client_status = "";
+                    if(client_info.status == 0){client_status = "비회원"}
+                    else {client_status = "회원"}
+                    target_class.find("div[name=mobile-client-info]").find("p[name=total_prepaid]").text(client_info.total_prepaid);
+                    target_class.find("div[name=mobile-client-info]").find("p[name=total_pay]").text(client_info.total_pay);
+                    target_class.find("div[name=mobile-client-info]").find("p[name=point]").text(client_info.point);
+                    target_class.find("div[name=mobile-client-info]").find("p[name=miss_cost]").text(client_info.miss_cost);
+                    target_class.find("div[name=mobile-client-info]").find("p[name=name]").text(client_info.name);
+                    target_class.find("div[name=mobile-client-info]").find("p[name=code]").text(client_info.code);
+                    target_class.find("div[name=mobile-client-info]").find("p[name=status]").text(client_status);
+                    target_class.find("div[name=mobile-client-info]").find("p[name=rank]").text(client_info.rank);
+                    target_class.find("div[name=mobile-client-info]").find("p[name=phone]").text(client_info.phone);
+                    target_class.find("div[name=mobile-client-info]").find("p[name=birthday]").text(client_info.year + " - " + client_info.month + " - " + client_info.day);
+                    target_class.find("div[name=mobile-client-info]").find("p[name=visit]").text(client_info.visit);
+                    target_class.find("div[name=mobile-client-info]").find("div[name=client_memo]").html('<p>'+client_info.memo +'</p>');
+                }
+                // 미등록 고객 ( Client idx 없음)
+                else {
+                    console.log("미등록 고객");
+                }
+            // }
+        }
+    }
+</script>

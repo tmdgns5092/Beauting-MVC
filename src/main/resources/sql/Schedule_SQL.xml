@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="schedule">
+    <select id="employeeSelect" parameterType="hashmap" resultType="hashmap">
+            SELECT b.idx, b.name
+            FROM (
+                SELECT idx
+                FROM employee
+                WHERE shop_idx = #{idx} AND status = 0
+            ) a
+            JOIN employee b
+            ON a.idx = b.idx
+            ORDER BY rank
+   </select>
+
+    <select id="scheduleSelect" parameterType="hashmap" resultType="hashmap">
+            SELECT A.*, B.original_time, B.end_time
+            FROM (
+                SELECT a.idx, shop_idx, DATE_FORMAT(date, '%Y%m%d') AS date,
+                            work_part, work_start, work_end, employee_idx, b.name AS employee_name, useYN, block_status
+                FROM ${id}_schedule a
+                LEFT JOIN (
+                    SELECT idx, name, status
+                    FROM employee
+                    WHERE shop_idx = #{idx}
+                ) b
+                ON a.employee_idx = b.idx
+                WHERE DATE_FORMAT(DATE(date),'%Y%m') = DATE_FORMAT(DATE(#{forDate}),'%Y%m') AND ( b.status = 0 OR b.status IS NULL )
+            ) A
+            LEFT JOIN (
+                SELECT DATE_FORMAT(date, '%Y%m%d') AS date, DATE_FORMAT(MIN(date), '%H%i') AS original_time, MAX(REPLACE(end_time, ':', '')) AS end_time, employee_idx
+                FROM ${id}_reservation
+                WHERE status != 0
+                GROUP BY DATE_FORMAT(date, '%Y%m%d'), employee_idx
+            ) B
+            ON A.date = B.date AND A.employee_idx = B.employee_idx
+            ORDER BY date ASC, work_part ASC, useYN DESC
+   </select>
+
+    <select id="selectBlockDate" parameterType="hashmap" resultType="hashmap">
+        SELECT DATE_FORMAT(MAX(b.date), '%Y%m%d') as date
+        FROM (
+            SELECT idx
+            FROM ${id}_schedule
+            WHERE block_status = 0
+        ) a
+        JOIN ${id}_schedule b
+        ON a.idx = b.idx
+   </select>
+
+    <insert id="insertScheduleAjax" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+         INSERT INTO ${id}_schedule(shop_idx, date, work_part, work_start, work_end, employee_idx, employee_name)
+         VALUES (
+             #{idx},
+             #{date},
+             #{work_part},
+             #{work_start},
+             #{work_end},
+             #{employee_idx},
+             #{employee_name}
+         )
+    </insert>
+
+    <update id="updateScheduleAjax" parameterType="hashmap" keyProperty="IDX" useGeneratedKeys="true">
+         UPDATE ${id}_schedule
+         SET work_part = #{work_part}, work_start = #{work_start}, work_end = #{work_end}
+         WHERE idx = #{idx}
+    </update>
+
+    <insert id="insertHolidayScheduleAjax" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+         INSERT INTO ${id}_schedule(shop_idx, date, useYN)
+         VALUES ( #{idx}, #{date}, 1 )
+    </insert>
+
+    <update id="updateChangeHoliday" parameterType="hashmap" keyProperty="IDX" useGeneratedKeys="true">
+        UPDATE ${id}_schedule
+        SET useYN = 2
+        WHERE idx = #{idx}
+    </update>
+    <delete id="deleteScheduleAjax">
+          DELETE FROM ${id}_schedule
+          WHERE idx = #{idx}
+    </delete>
+</mapper>

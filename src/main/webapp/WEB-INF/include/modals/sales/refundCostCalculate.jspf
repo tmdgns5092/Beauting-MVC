@@ -1,0 +1,76 @@
+<%@ page pageEncoding="utf-8" %>
+<div class="modal fade" id="ex02" tabindex="-1" role="dialog" aria-labelledby="ex02" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content refund-modal">
+            <div class="modal-body">
+                <button class="close-btn02"  data-dismiss="modal"><i class="fas fa-times"></i></button>
+                <h2 class="mb-10">환불처리</h2>
+                <h4>설불권 / 티켓 선택</h4>
+                <div class="refund-content02">
+                    <input type="hidden" id="res_type" value="0">
+                    <input type="hidden" id="res_idx">
+                    <input type="hidden" id="res_cost">
+                    <input type="hidden" id="res_name">
+                    <input type="hidden" id="res_vali">
+                    <input type="hidden" id="res_sale_idx">
+                    <select class="wide" id="refund-select" onchange="refundChange(this)"></select>
+
+                    <div class="refund-content-price" style="display: none;"><p id="residual-cate"></p><p id="residual-origin-cost"></p><span id="residual-origin-type"></span></div>
+                    <div class="refund-content-price" style="display: none;">판매 가격 : <p id="residual-sale-cost"></p><span>원</span></div>
+                    <div class="refund-content-price">남은금액 : <p id="residual_cost">0</p><span id="residual_type">원</span></div>
+                    <%--<div class="refund-content-price">--%>
+                        <%--티켓횟수 : <p>-</p><span>회</span>--%>
+                    <%--</div>--%>
+                </div>
+                <div class="refund-content">
+                    <h4>직원선택</h4>
+                    <div class="btn-group-toggle" data-toggle="buttons">
+                        <%--<label class="btn btn-secondary">--%>
+                            <%--<input type="checkbox" checked autocomplete="off"> 직원01--%>
+                        <%--</label>--%>
+                        <%--<label class="btn btn-secondary">--%>
+                            <%--<input type="checkbox" checked autocomplete="off"> 직원02--%>
+                        <%--</label>--%>
+                        <%--<label class="btn btn-secondary">--%>
+                            <%--<input type="checkbox" checked autocomplete="off"> 직원03--%>
+                        <%--</label>--%>
+                        <c:forEach items="${eList}" var="empl">
+                            <label class="btn btn-secondary" data-value="${empl.idx}" onclick="refundModalEmplClick(this)">
+                                <input type="checkbox" checked autocomplete="off"> <c>${empl.name}</c>
+                            </label>
+                        </c:forEach>
+                    </div>
+                </div>
+                <div class="refund-content">
+                    <h4>취소 / 재결제금액 입력</h4>
+                    <table id="refund-cost-modal-empl-table">
+                        <thead>
+                        <tr>
+                            <th width="30%">직원</th>
+                            <th width="35%">카드 취소금액</th>
+                            <th width="35%">카드 재결제금액</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr data-value="-1">
+                            <td colspan="3" style="background: #ffffff;padding: 1.2rem 8px">선택한 직원이 없습니다.</td>
+                        </tr>
+                        <%--<tr>--%>
+                            <%--<td>직원01</td>--%>
+                            <%--<td><input type="text" placeholder="금액을 입력해주세요."></td>--%>
+                        <%--</tr>--%>
+                        </tbody>
+                    </table>
+                </div>
+                <h4>메모</h4>
+                <div>
+                    <textarea id="refund-text" style="height: 150px"></textarea>
+                </div>
+                <div class="content02-save mt-15">
+                    <button class="" onclick="submitRefundCost()">환불완료</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/static/dist/js/sales/refundCost-Calculation.js"></script>

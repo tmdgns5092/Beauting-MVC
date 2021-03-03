@@ -1,0 +1,10 @@
+<%@ page pageEncoding="utf-8" %>
+<div class="box-body box-content" style="padding: 5px">
+    <%-- 회원권(선불권) --%>
+    <div class="btn-group" role="group" aria-label="..." name="prepaid-body">
+        <%--<button type="button" class="btn btn-default active">시술</button>--%>
+        <%--<button type="button" class="btn btn-default">제품</button>--%>
+    </div>
+    <table class="table table-bordered text-center" name="prepaid-table"></table>
+    <%-- /. 회원권(선불권) --%>
+</div>

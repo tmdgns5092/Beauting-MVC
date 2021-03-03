@@ -1,0 +1,504 @@
+<%--예약 수정 모달--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<c:set var="start_h" value="${fn:split(shopInfo.shop_open, ':')[0]}"/>
+<c:set var="end_h" value="${fn:split(shopInfo.shop_close, ':')[0]}"/>
+
+<c:set var="res_start_hour" value="${fn:split(rMap.res_time, ':')[0]}"/>
+<c:set var="res_start_minute" value="${fn:split(rMap.res_time, ':')[1]}"/>
+
+<div class="modal fade" id="reservation-mf" tabindex="-1" role="dialog" aria-labelledby="reservation-step1" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="width: 509px;">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="modalCost();"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">예약 수정</h4>
+            </div>
+
+            <div class="modal-body" style="padding: 12px 0 0 30px;">
+                <div class="reservation-top" style="    padding: 10px;
+    border: 1px solid #ffc200;
+    width: 449px;
+    position: relative;
+    display: inline-block;
+    margin-bottom: 10px;
+    border-radius: 3px;">
+                    <div class="">
+                        <span>예약일시</span><span id="mf-select-date">${resList.date}</span>
+                        <input type="image" id="mf-res_calendar" src="${pageContext.request.contextPath}/static/img/ahaIMG/calendar.gif">
+                    </div>
+                    <div class="test-00">
+                        <select class="end-modal-body-top-select" id="mf-res_hour"></select>
+                    </div>
+                    <div class="test-11">
+                        <select class="end-modal-body-top-select sr" id="mf-res_minute"></select>
+                    </div>
+                </div>
+
+                <div class="addclient_item">
+                    <p>예약 담당자</p>
+                    <div>
+                        <select class="end-table-body-select" id="mf-empls"></select>
+                    </div>
+                </div>
+                <div class="addclient_item">
+                    <p>서비스</p>
+                    <div>
+                        <td class="pr-25" id="service_td" width="40%">
+                            <select class="end-table-body-select wide" id="mf-service_cate"></select><!-- 색을 보여줘야함 -->
+                            <div class="service-color" id="mf-cate_color"></div>
+                        </td>
+                        <td class="pl-25" width="40%">
+                            <select class="end-table-body-select wide" id="mf-service_detail"></select>
+                        </td>
+                    </div>
+                </div>
+                <div class="addclient_item">
+                    <p>시술 시간</p>
+                    <div>
+                        <select class="end-table-body-select wide" id="mf-service_hour">
+                            <option value="0" selected>0시</option>
+                            <option value="1">1시</option>
+                            <option value="2">2시</option>
+                            <option value="3">3시</option>
+                            <option value="4">4시</option>
+                            <option value="5">5시</option>
+                            <option value="6">6시</option>
+                        </select>
+                        <select class="end-table-body-select sr wide" id="mf-service_minute"></select>
+                    </div>
+                </div>
+                <div class="addclient_item">
+                    <p>아이콘</p>
+                    <div class="btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-icon" for="mf-chk1">
+                            <input type="checkbox" id="mf-chk1"> <i class="fas fa-splotch"></i>
+                        </label>
+                        <label class="btn btn-icon" for="mf-chk2">
+                            <input type="checkbox" id="mf-chk2"> <i class="fas fa-phone"></i>
+                        </label>
+                    </div>
+                </div>
+                <div class="addclient_item">
+                    <p>예약 메모</p>
+                    <div>
+                        <textarea placeholder="메모를 입력해주세요." id="mf_res_memo" style="height: 124px"></textarea>
+                    </div>
+                </div>
+                <div class="addclient_item">
+                    <p>문자발송 제외</p>
+                    <div>
+                        <input type="checkbox" id="mf-chk3" name="sms_check"><label class="end-label" for="mf-chk3"><em></em>예</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="text-align: center;">
+                <button type="button" class="btn btn-primary" onclick="mf_res()" style="    background-color: rgb(255,223,44);
+    color: rgba(0,0,0,0.8);
+    width: 162px;
+    border-radius: 2px;
+    height: 42px;
+    font-weight: 600;
+    border: 1px solid #ffc200;">수정</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var res_idx;
+    $('#mf-res_calendar').datepicker(datepickerObject());
+    $('#mf-res_calendar').change(function(){
+        $('#mf-select-date').text($(this).val());
+    });
+</script>
+<script>
+    function select_detail_update(){
+        var color = $('#mf-service_cate option:selected').attr("data-value");
+        $('#mf-cate_color').css("background-color", color);
+        $('#mf-service_detail').empty();
+        $('#mf-service_detail').append('<option value="-1">선택</option>');
+        var tmp = "";
+        var cate_name = $('#mf-service_cate option:selected').text();
+
+        ////console.log("cate name : " + cate_name);
+        $.ajax({
+            url : "/Reservation/serviceDetailCall",
+            type: "post",
+            data : {
+                "cateName" : cate_name
+            },
+            dataType : "json",
+            async : false,
+            success : function(data){
+                if(data.code == 200){
+                    for(var i = 0; i < data.detailList.length; i++){
+                        tmp = tmp + '<option value="'+data.detailList[i].idx+'" data-value="'+removeQuotes(data.detailList[i].time)+'">' + data.detailList[i].name + '</option>';
+                    }
+                    $('#mf-service_detail').append(tmp);
+                    $('#mf-service_detail').niceSelect('update');
+                } else{
+                    alert("잠시 후 다시 시도해 주세요.");
+                    form_submit('/Reservation/calendar', {forDate : $('#forDate').val()}, 'post');
+                    return false;
+                }
+            },
+            error : function(){
+                alert("에러가 발생했습니다."); location.href = document.URL;
+            }
+        });
+    }
+</script>
+
+<script>
+    <%-- reservation times selected--%>
+    function makeMFReservation(data){
+        res_idx = data.resList.idx;
+        var sms_check = data.resList.sms_check;
+        var start_h = parseInt(data.shopOpen);
+        var end_h = parseInt(data.shopClose);
+
+        var res_start_hour = data.resList.res_time.split(":")[0];
+        var res_start_minute = data.resList.res_time.split(":")[1];
+
+        // 기존 예약 시간
+        var res_hour_tmp = '';
+        for(start_h; start_h <= end_h; start_h++){
+            ////console.log("start_h");
+            if(res_start_hour == start_h)
+                res_hour_tmp += '<option value="' + start_h + '" selected>' + start_h + '시</option>';
+            else
+                res_hour_tmp += '<option value="' + start_h + '">' + start_h + '시</option>';
+        }
+        // 기존 예약 분
+        var res_minute_tmp = '';
+        if(default_minute == 10){
+            for(var i = 0; i < 60; i = i + 10){
+                ////console.log("10");
+                if(res_start_minute == returnMinuteTypeNumber(i))
+                    res_minute_tmp += '<option value="' + returnMinuteTypeNumber(i) + '" selected>' + returnMinuteTypeNumber(i) + '분</option>';
+                else
+                    res_minute_tmp += '<option value="' + returnMinuteTypeNumber(i) + '">' + returnMinuteTypeNumber(i) + '분</option>';
+            }
+        } else if(default_minute == 15) {
+            for(var i = 0; i < 60; i = i + 15){
+                ////console.log("15");
+                if(res_start_minute == returnMinuteTypeNumber(i))
+                    res_minute_tmp += '<option value="' + returnMinuteTypeNumber(i) + '" selected>' + returnMinuteTypeNumber(i) + '분</option>';
+                else
+                    res_minute_tmp += '<option value="' + returnMinuteTypeNumber(i) + '">' + returnMinuteTypeNumber(i) + '분</option>';
+            }
+        }
+        // 기존 서비스 카테고리
+        var res_cate_tmp = '';
+        var service_list = data.service_list;
+        $.each(service_list, function (index, value){
+            ////console.log("index");
+            res_cate_tmp += '<option value="' + value.idx + '" data-value="' + value.color.replace(/\"/gi, "") + '">' + value.category + '</option>';
+        });
+        // 기존 직원
+        var res_empl_tmp = '';
+        var emplList = data.emplList;
+        $.each(emplList, function(index, value){
+            ////console.log("index2");
+            if(value.idx == data.resList.employee_idx)
+                res_empl_tmp += '<option value="' + value.idx + '" selected>' + value.name.replace(/\"/gi, "") + '</option>';
+            else
+                res_empl_tmp += '<option value="' + value.idx + '">' + value.name.replace(/\"/gi, "") + '</option>';
+        });
+        // 서비스 시술 시간
+        var service_minute_tmp = '';
+        if(default_minute == 10){
+            service_minute_tmp += '<option value="00" selected>00분</option>' +
+                '<option value="10" >10분</option>\n' +
+                '<option value="20" >20분</option>\n' +
+                '<option value="30" >30분</option>\n' +
+                '<option value="40" >40분</option>\n' +
+                '<option value="50" >50분</option>';
+        }
+        else if(default_minute == 15){
+            service_minute_tmp += '<option value="00" selected>00분</option>' +
+                '<option value="15" >15분</option>\n' +
+                '<option value="30" >30분</option>\n' +
+                '<option value="45" >45분</option>\n';
+        }
+
+        $('#mf-select-date, #mf-res_hour, #mf-res_minute, #mf-service_cate, #mf-service_detail, #mf-empls, #mf-service_minute').empty();
+        $('#mf-select-date').append(data.resList.date);
+        $('#mf-res_hour').append(res_hour_tmp);
+        $('#mf-res_minute').append(res_minute_tmp);
+        $('#mf-service_cate').append(res_cate_tmp);
+        $('#mf-service_detail').append('<option value="-1">선택</option>');
+        $('#mf-empls').append(res_empl_tmp);
+        $('#mf-service_minute').append(service_minute_tmp);
+
+        /* 시간 세팅 & 직원 세팅 */
+        var res_time = data.resList.res_time;
+        var res_times = res_time.split(":");
+        var res_hour = res_times[0];
+        var res_minute = res_times[1];
+        var res_empl = data.resList.employee_idx;
+
+        $('#mf-res_hour').val(parseInt(res_hour)).prop("selected", true);
+        $('#mf-res_minute').val(res_minute).prop("selected", true);
+        $('#mf-empls').val(res_empl).prop("selected", true);
+
+        /* 시술 세팅 */
+        var service_cate = data.resList.cate_idx;
+        var service_name = data.resList.detail_idx;
+
+        $('#mf-service_cate').val(service_cate).prop("selected", true);
+        select_detail_update();
+        $('#mf-service_detail').val(service_name).prop("selected", true);
+
+        /* 시술 시간 세팅 */
+        var work_hour;
+        var work_minute;
+
+        var start_hour = res_hour;
+        var start_minute = res_minute;
+
+        var end_time = data.resList.end_time;
+        var end_times = end_time.split(":");
+        var end_hour = end_times[0];
+        var end_minute= end_times[1];
+
+        if(start_minute > end_minute){
+            work_minute = (60 - parseInt(start_minute)) + parseInt(end_minute);
+            start_hour = parseInt(start_hour) + 1;
+            work_hour = parseInt(end_hour) - parseInt(start_hour);
+        } else{
+            work_minute = parseInt(end_minute) - parseInt(start_minute);
+            work_hour = parseInt(end_hour) - parseInt(start_hour);
+        }
+        if(dminute == '10'){
+            if(work_minute == 0) work_minute = 0;
+            else if(work_minute == 15) work_minute = 10;
+            else if(work_minute == 30) work_minute = 30;
+            else if(work_minute == 45) work_minute = 40;
+            else if(work_minute ==60) work_minute = 60;
+        } else {
+            if(work_minute <= 10) work_minute = 0;
+            else if(work_minute == 20) work_minute = 15;
+            else if(work_minute == 30) work_minute = 30;
+            else if(work_minute == 50) work_minute = 45;
+            else if(work_minute ==60) work_minute = 60;
+        }
+        $('#mf-service_hour').val(work_hour).prop("selected", true);
+        $('#mf-service_minute').val(returnMinuteTypeNumber(work_minute)).prop("selected", true);
+
+        /* 메모 세팅 */
+        $('#mf_res_memo').val(data.resList.memo);
+
+        /* 체크박스 세팅 */
+        $("#mf-chk1").prop('checked', false);
+        $("#mf-chk2").prop('checked', false);
+        var icons_tmp = data.resList.icons;
+        ////console.log("icons : " + data.resList.icons);
+        for(var i = 0 ; i < icons_tmp.length; i++){
+            if(icons_tmp[i] == 1) $("#mf-chk1").prop('checked', true);
+            else if (icons_tmp[i] == 2) $("#mf-chk2").prop('checked', true);
+        }
+        if(sms_check == 1) $("#mf-chk3").prop('checked', true);      // 문자 수신 동의
+
+        $('select').niceSelect('update');
+    };
+</script>
+
+<%-- service detail call--%>
+<script>
+    $('#mf-service_cate').change(function(){
+        select_detail_update();
+    });
+</script>
+
+<%-- servatce detail selected--%>
+<script>
+    $(document).on("change", "#mf-service_detail", function(){
+        var default_minute = default_minute;
+        var time = $('#mf-service_detail option:selected').attr("data-value");
+        var times = time.split(":");
+        var hour = times[0];
+        var minute = parseInt(times[1]);
+        hour = removefirstZero(hour);
+        if(uk(hour) == "") $('#mf-service_hour').val(-1).prop("selected", true);
+        else $('#mf-service_hour').val(hour).prop("selected", true);
+
+        $('#mf-service_minute').val(minute).prop("selected", true);
+        if(default_minute == "10"){
+            if(minute >= 0 && minute < 10) $('#mf-service_minute').val("00").prop("selected", true);
+            else if(minute >= 10 && minute < 20) $('#mf-service_minute').val("10").prop("selected", true);
+            else if(minute >= 20 && minute < 30) $('#mf-service_minute').val("20").prop("selected", true);
+            else if(minute >= 30 && minute < 40) $('#mf-service_minute').val("30").prop("selected", true);
+            else if(minute >= 40 && minute < 50) $('#mf-service_minute').val("40").prop("selected", true);
+            else if(minute >= 50 && minute < 60) $('#mf-service_minute').val("50").prop("selected", true);
+            else $('#mf-service_minute').val(-1).prop("selected", true);
+        } else{
+            if(minute >= 0 && minute < 15) $('#mf-service_minute').val("00").prop("selected", true);
+            else if(minute >= 15 && minute < 30) $('#mf-service_minute').val("15").prop("selected", true);
+            else if(minute >= 30 && minute < 45) $('#mf-service_minute').val("30").prop("selected", true);
+            else if(minute >= 45 && minute < 60) $('#mf-service_minute').val("45").prop("selected", true);
+            else $('#mf-service_minute').val(-1).prop("selected", true);
+        }
+        $('select').niceSelect('update');
+    });
+</script>
+
+<%-- 예약 등록 --%>
+<script>
+    function mf_res(){
+        var res_date = $('#mf-select-date').text();
+        var memo = $('#mf_res_memo').val();
+        var res_hour = $('#mf-res_hour option:selected').val();
+        var res_minute = $('#mf-res_minute option:selected').val();
+        var service_cate = $('#mf-service_cate option:selected').val();
+        var service_detail;
+        var service_color = $('#mf-service_cate option:selected').attr("data-value");
+        var empls = $('#mf-empls option:selected').val();
+        var service_hour = $('#mf-service_hour option:selected').val();
+        var service_minute = $('#mf-service_minute option:selected').val();
+        var icons = "";
+        var sms_check = 0;
+        var end_time;
+        var end_hour;
+        var end_minute;
+
+        if(uk(res_date) == ""){
+            alert("예약 날짜를 선택해 주세요");
+            $('#mf-select-date').focus();
+            return false;
+        }
+        if(uk(res_hour) == "" || uk(res_hour) == -1){
+            alert("예약 시간을 선택해 주세요");
+            $('#mf-res_hour').focus();
+            return false;
+        }
+        if(uk(res_minute) == "" || uk(res_minute) == -1){
+            alert("예약 분을 선택해 주세요");
+            $('#mf-res_minute').focus();
+            return false;
+        }
+        if(uk(service_cate) == -1 || uk(service_cate) == ""){
+            alert("시술을 선택해 주세요");
+            $('#mf-service_cate').focus();
+            return false;
+        } else{
+            service_detail = $('#mf-service_detail option:selected').val();
+            if(uk(service_detail) == "" || uk(service_detail) == -1){
+                alert("시술을 선택해 주세요");
+                $('#mf-service_detail').focus();
+                return false;
+            }
+        }
+        if(uk(empls) == "" || uk(empls) == -1){
+            alert("직원을 선택해 주세요");
+            $('#mf-empls').focus();
+            return false;
+        }
+        if(uk(service_hour) == "" || uk(service_hour) == -1){
+            alert("시술 시간을 선택해 주세요");
+            $('#mf-service_hour').focus();
+            return false;
+        }
+        if(uk(service_minute) == "" || uk(service_minute) == -1){
+            alert("시술 시간을 선택해 주세요");
+            $('#mf-service_minute').focus();
+            return false;
+        }
+        if($('#mf-chk1').is(":checked")) icons = icons + "1";
+        if($('#mf-chk2').is(":checked"))
+            if(icons == "1") icons = icons + ",2";
+            else icons = "2";
+        if($('#mf-chk3').is(":checked")) sms_check = 1;
+
+
+
+        /* end time */
+        if(default_minute == 10){
+            if((Number(res_minute) + Number(service_minute)) >= 60){
+                end_hour = ((Number(res_minute) + Number(service_minute)) / 60) + (Number(res_hour) + Number(service_hour));
+                end_minute = (Number(res_minute) + Number(service_minute)) % 60;
+            }
+            else{
+                end_hour = Number(res_hour) + Number(service_hour);
+                end_minute = Number(res_minute) + Number(service_minute);
+            }
+            if(end_minute >= 0 && end_minute < 10){ end_minute = "00";}
+            if(end_minute >= 10 && end_minute < 20){ end_minute = "10";}
+            if(end_minute >= 20 && end_minute < 30){ end_minute = "20";}
+            if(end_minute >= 30 && end_minute < 40){ end_minute = "30";}
+            if(end_minute >= 40 && end_minute < 50){ end_minute = "40";}
+            if(end_minute >= 50 && end_minute < 60){ end_minute = "50";}
+        } else{
+            if((Number(res_minute) + Number(service_minute)) >= 60){
+                end_hour = ((Number(res_minute) + Number(service_minute)) / 60) + (Number(res_hour) + Number(service_hour));
+                end_minute = (Number(res_minute) + Number(service_minute)) % 60;
+            }
+            else{
+                end_hour = Number(res_hour) + Number(service_hour);
+                end_minute = Number(res_minute) + Number(service_minute);
+            }
+            if(end_minute >= 0 && end_minute < 15){ end_minute = "00";}
+            if(end_minute >= 15 && end_minute < 30){ end_minute = "15";}
+            if(end_minute >= 30 && end_minute < 45){ end_minute = "30";}
+            if(end_minute >= 45 && end_minute < 60){ end_minute = "45";}
+        }
+        end_hour = Math.floor(end_hour);
+        end_time = Math.floor(end_hour) + ":" + end_minute;
+
+        $.ajax({
+            url : "/Reservation/updateReservation",
+            type: "post",
+            data : {
+                "res_date" : res_date,
+                "res_hour" : res_hour,
+                "res_minute" : res_minute,
+                "service_detail" : service_detail,
+                "memo" : memo,
+                "emplIdx" : empls,
+                "end_time" : end_time,
+                "color" : service_color,
+                "service_hour" : service_hour,
+                "service_minute" : service_minute,
+                "icons" : icons,
+                "sms_check" : sms_check,
+                "end_hour" : end_hour,
+                "end_minute" : end_minute,
+                "res_idx" : res_idx
+            },
+            dataType : "json",
+            success : function(data){
+                if(data.code == 200){
+                    var msg_send_flag = true;
+                    var type1 = selectAutoMessage(1);
+                    var type2 = selectAutoMessage(2);
+                    var type3 = selectAutoMessage(3);
+                    var type4 = selectAutoMessage(4);
+
+                    if(type1 == null && type2 == null && type3 == null && type4 == null) msg_send_flag = false;
+
+                    var sendData = msgRefundSend(msg_send_flag, res_idx);
+                    form_submit('/Reservation/calendar', {forDate : $('#forDate').val()}, 'post');
+                    return false;
+                } else if(data.code == 901){
+                    alert("예약이 중첩되었습니다");
+                    return false;
+                } else if(data.code == 902){
+                    alert("담당자의 근무시간이 아닙니다. 예약 시간을 확인해 주세요.");
+                    return false;
+                }
+                else{
+                    alert("잠시 후 다시 시도해 주세요");
+                    return false;
+                }
+            },
+            error : function(){
+                alert("에러가 발생했습니다."); location.reload();
+            }
+        });
+    }
+
+    function modalCost(){
+        $('.modal.in').modal('hide');
+    }
+</script>

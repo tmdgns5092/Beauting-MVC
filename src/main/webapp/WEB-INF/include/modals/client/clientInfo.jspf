@@ -1,0 +1,753 @@
+<%@ page pageEncoding="utf-8" %>
+<!-- Modal -->
+<div class="modal fade" id="c-info-modal" tabindex="-1" role="dialog" aria-labelledby="clientInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="width: 509px">
+        <div class="modal-content modal03">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">고객 정보</h4>
+            </div>
+
+            <div class="modal-body">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a id="c-info-main_tab" href="#user-data" aria-controls="user-data" role="tab" data-toggle="tab">고객정보</a></li>
+                    <li role="presentation"><a href="#user-price" aria-controls="user-price" role="tab" data-toggle="tab">회원권 / 횟수권</a></li>
+                    <li role="presentation"><a href="#user-memo" aria-controls="user-memo" role="tab" data-toggle="tab">메모</a></li>
+                    <li role="presentation"><a href="#usage" aria-controls="usage" role="tab" data-toggle="tab" onclick="select_usage(this)">최근 내역</a></li>
+                    <li role="presentation"><a href="#user-keep" aria-controls="user-keep" role="tab" data-toggle="tab">보관 제품</a></li>
+                </ul>
+                <div class="tab-content">
+                    <!--기본 정보-->
+                    <div role="tabpanel" class="tab-pane active" id="user-data">
+                        <ul class="content02-top">
+                            <li>
+                                <p>잔액금액</p>
+                                <div>
+                                    <p class="ci_show_number" name="total_prepaid"></p>
+                                </div>
+                            </li>
+                            <li>
+                                <p>총 결제액</p>
+                                <div>
+                                    <p class="ci_show_number" name="total_pay"></p>
+                                </div>
+                            </li>
+                            <li>
+                                <p>포인트</p>
+                                <div>
+                                    <p class="ci_show_number" name="point"></p>
+                                    <input type="text" id="custom_point" value="" style="color: #0c0c0c; display: none;">
+                                </div>
+                            </li>
+                            <li>
+                                <p>미수금</p>
+                                <div>
+                                    <p class="ci_show_number" name="miss_cost"></p>
+                                    <input type="text" id="custom_miss_cost" value="" style="color: #0c0c0c; display: none;">
+                                </div>
+                            </li>
+                        </ul>
+
+                        <div class="addclient_item">
+                            <p>이름</p>
+                            <div>
+                                <input type="text" name="name" placeholder="이름을 입력해주세요.">
+                            </div>
+                        </div>
+
+                        <div class="addclient_item">
+                            <p>고객번호</p>
+                            <div>
+                                <input type="number" name="code">
+                            </div>
+                        </div>
+
+                        <div class="addclient_item">
+                            <p>회원구분</p>
+                            <div>
+                                <input type="radio" name="status" value="0" id="c-info-status-0">
+                                <label for="c-info-status-0">비회원</label>
+                                <input type="radio" name="status" value="1" id="c-info-status-1">
+                                <label for="c-info-status-1">회원</label>
+                            </div>
+                        </div>
+
+                        <div class="addclient_item">
+                            <p>분류</p>
+                            <div>
+                                <select class="nice-select wide" name="rank">
+                                    <option value="">선택</option>
+                                    <c:set var="rank_list" value="${fn:split(shopInfo.client_rank,'/')}"/>
+                                    <c:forEach var="rank" items="${rank_list}" varStatus="g">
+                                        <option value="${rank}">${rank}</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="addclient_item">
+                            <p>휴대폰</p>
+                            <div>
+                                <input type="hidden" id="org-phone">
+                                <input type="tel" id="c-info-phone" name="phone" placeholder=" ' - ' 없이 입력해주세요" maxlength="16"
+                                       oninput="maxLengthCheck(this)" onkeydown="onlyTel(this)" onfocus="OnCheckPhone(this, event)" onkeyup="OnCheckPhone(this, event)" style="width: 237px;">
+                                <button class="" type="button" onclick="overcheck_phone2()" style="height: 40px;border: 1px solid #4877c2;background: #fff;color: #4877c2;width: 100px;">중복확인</button>
+                                <p id="c-info-phone_message"></p>
+                            </div>
+                        </div>
+
+                        <div class="addclient_item">
+                            <p>생일</p>
+                            <div>
+                                <%--<input type="hidden" name="year">--%>
+                                <input type="text" name="year" id="c-info-y" style="width: 134px" onkeydown="onlyNumber(this)" maxlength="4" oninput="maxLengthCheck(this)">
+                                <%--<label class="c-info-year-text" for="c-info-y">년도</label>--%>
+                                <input type="text" name="month" id="c-info-m" style="width: 100px" onkeydown="onlyNumber(this)" maxlength="2" oninput="maxLengthCheck(this)">
+                                <%--<label class="c-info-month-text" for="c-info-m">월</label>--%>
+                                <input type="text" name="day" id="c-info-d" style="width: 100px;" onkeydown="onlyNumber(this)" maxlength="2" oninput="maxLengthCheck(this)">
+                                <%--<label class="c-info-day-text" for="c-info-d">일</label>--%>
+                            </div>
+                        </div>
+
+                        <div class="addclient_item">
+                            <p>경로</p>
+                            <div>
+                                <select class="nice-select wide" name="visit">
+                                    <option value="">선택</option>
+                                    <c:set var="visit_list" value="${fn:split(shopInfo.client_visit,'/')}"/>
+                                    <c:forEach var="visit" items="${visit_list}" varStatus="g">
+                                        <option value="${visit}">${visit}</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="addclient_item">
+                            <p>수신동의</p>
+                            <div>
+                                <div class="sms_send_check">
+                                    <input type="checkbox" id="c-info-sms-check" name="sms_check" value="0">
+                                    <label for="c-info-sms-check">동의</label>
+                                </div>
+                                </select>
+                            </div>
+                        </div>
+                        <%--<div class="div-content">--%>
+                            <%--<p>구분</p>--%>
+                            <%--<select class="nice-select wide" name="kind">--%>
+                                <%--<option value="">선택</option>--%>
+                                <%--<c:set var="kind_list" value="${fn:split(shopInfo.client_kind,'/')}"/>--%>
+                                <%--<c:forEach var="kind" items="${kind_list}" varStatus="g">--%>
+                                    <%--<option value="${kind}">${kind}</option>--%>
+                                <%--</c:forEach>--%>
+                            <%--</select>--%>
+                        <%--</div>--%>
+                    </div>
+                    <!--회원권-->
+                    <div role="tabpanel" class="tab-pane" id="user-price">
+                        <div class="upload-card">
+                            <div class="content02-bottom">
+                                <h4>보유 회원권 / 횟수권</h4>
+                                <table class="ci-show-table">
+                                    <thead>
+                                    <tr>
+                                        <th>회원권명</th>
+                                        <th>유효기간</th>
+                                        <th rowspan="2">잔여금액</th>
+                                    </tr>
+                                    </thead>
+                                </table>
+                                <div class="div-content" name="prepaid">
+                                </div>
+                                <table class="ci-show-table">
+                                    <thead>
+                                    <tr>
+                                        <th>횟수권명</th>
+                                        <th>유효기간</th>
+                                        <th>잔여횟수</th>
+                                    </tr>
+                                    </thead>
+                                </table>
+                                <div class="div-content" name="ticket">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--고객메모-->
+                    <div role="tabpanel" class="tab-pane" id="user-memo">
+                        <div class="upload-card">
+                            <%--<textarea name="memo" style="height: 200px;" placeholder="고객 메모가 없습니다."></textarea>--%>
+                                <textarea name="memo" style="height: 200px;"></textarea>
+                        </div>
+                    </div>
+                    <!--최근내역-->
+                    <div role="tabpanel" class="tab-pane" id="usage">
+                        <div class="upload-card">
+                            <table class="content04-table">
+                                <thead>
+                                <tr>
+                                    <th scope="col" width="16%">방문일</th>
+                                    <th scope="col" width="40%">서비스 이름</th>
+                                    <th scope="col" width="17%">매출</th>
+                                    <th scope="col" width="17%">소진</th>
+                                    <th scope="col" width="10%">상태</th>
+                                </tr>
+                                </thead>
+                                <tbody class="usage_list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <%--킵 제품--%>
+                    <div role="tabpanel" class="tab-pane" id="user-keep">
+                        <div class="upload-card keep-card">
+                            <div class="text-right">
+                                <button class="keep-add-btn" id="create_toggle" type="button" data-toggle="collapse" data-target="#folderDiv" aria-expanded="false" aria-controls="collapseExample">
+                                    폴더 생성
+                                </button>
+                            </div>
+                            <div class="collapse" id="folderDiv">
+                                <input type="text" placeholder="폴더명을 입력해주세요." id="folder_name">
+                                <button class="btn btn-default btn-block" id="folder_create_btn">생성</button>
+                            </div>
+                            <div class="keep-folder" id="keep-folder">
+                                <ul>
+                                    <%--<li>
+                                        <div class="keep-product-add">
+                                            &lt;%&ndash;폴더명 수정&ndash;%&gt;
+                                            <div class="keep-folder-top">
+                                                <h5 name="folder_name">폴더명</h5>
+                                                <div name="divToggle" class="folder-name-editer" style="display: none;">
+                                                    <input type="text" placeholder="수정할 폴더명을 입력해주세요." name="modify_name">
+                                                    <button onclick="folder_save(this)">저장</button>
+                                                    <button onclick="folder_modify(this)" name="cancel">취소</button>
+                                                </div>
+                                                <div class="keep-folder-top-btn" name="folder_tool">
+                                                    <button type="button" onclick="folder_modify(this)" name="modify">수정</button>
+                                                    <button type="button" onclick="folder_delete(this)">삭제</button>
+                                                </div>
+                                            </div>
+                                            &lt;%&ndash;폴더명 수정 end&ndash;%&gt;
+                                            <div>
+                                                <input type="text" placeholder="제품명을 입력해주세요." name="product_name">
+                                                <button onclick="keep_product_create(this)">추가</button>
+                                            </div>
+                                        </div>
+                                        <div class="keep-product">
+                                            <ul>
+                                                <li>
+                                                    <p>제품01</p>
+                                                    <button type="button" onclick="product_keep_delete(this)"><i class="fas fa-times"></i></button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>--%>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <%--<div class="content02-save" style="margin-top: 15px">--%>
+                    <%--<button type="button" id="cUpdate_btn">저장</button>--%>
+                <%--</div>--%>
+            </div>
+            <%--<div class="modal-bottom">
+                <button class="modal-btn" id="cUpdate_btn">저장</button>
+                <button class="modal-btn" data-dismiss="modal">닫기</button>
+            </div>--%>
+            <div class="modal-footer" style="text-align: center">
+                <button type="button" class="btn btn-primary" id="cUpdate_btn" style="color: #37454a;
+    width: 180px;
+    border-radius: 2px;
+    height: 42px;
+    font-weight: 600;
+    background-color: #ffca11;
+    border: 1px solid #ffc200;">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var phone_number_check = false;
+    var iModal = $('#c-info-modal');
+
+    $(document).ready(function () {
+        <!-- 값이 비엇을시 0으로 넣기 -->
+        $(document).on('click', 'i[name=delete]', function () { $(this).closest('ul').remove(); });
+        $(document).on('keyup','input', function () { if($(this).val() == '' && $(this).attr('type') == 'number')$(this).val(0); });
+        /*$(document).on('keyup', 'input[name=prepaid]', function () {
+            var prepaid = $(document).find('input[name=prepaid]'), total = 0;
+            prepaid.each(function (i, e) { total += parseInt($(e).val()); });
+            $(document).find('input[name=total_prepaid]').val(total);
+        });*/
+    });
+    /* 제품 추가 */
+    $(document).on('keydown', 'input[name=product_name], #folder_name', function(key){
+        //console.log(key.keyCode);
+        if (key.which == 13) {
+            //console.log('enter ... ');
+            $(this).closest('div').find('button').trigger('click');
+        }
+    });
+</script>
+<script>
+    function overcheck_phone2(){
+        var phone = $('#c-info-phone').val();
+        if(uk(phone) == "") {alert("휴대폰 번호를 입력해 주세요."); $('#c-info-phone').focus(); return false;}
+        if((phone.match(/-/g) || []).length < 2){
+            alert("잘못된 휴대폰 번호입니다.");
+            $('#c-info-phone').focus();
+            return false;
+        }
+        var org_phone = $('#org-phone').val();
+        if(phone == org_phone){
+            alert('전화번호 변경시 눌러주세요.');
+            $('#c-info-phone_message').text("");
+            return false;
+        }
+        phone = replaceAll(phone, "-", "");
+        $.ajax({
+            url : "/Client/clientOverCheckFromPhone.do",
+            type: "post",
+            data : {
+                "phone" : phone
+            },
+            dataType : "json",
+            success : function(data){
+                if(data.code == "200"){
+                    alert("사용할 수 있는 휴대폰 번호입니다.");
+                    $('#c-info-phone_message').text("사용할 수 있는 휴대폰 번호입니다.");
+                    phone_number_check = true;
+                } else {
+                    alert("이미 등록된 휴대폰번호입니다.");
+                    $('#c-info-phone_message').text("");
+                    $('#c-info-phone').val(org_phone);
+                    phone_number_check = false;
+                }
+            },
+            error : function(){
+                alert("에러가 발생했습니다.");
+                if(document.URL.indexOf("calendar.do"))form_submit(document.URL, {forDate :$("#forDate").val()});
+                else location.href = document.URL;
+            }
+        });
+    }
+</script>
+<script>
+    <%-- 고객 최근 판매내역 Ajax --%>
+    function select_usage(obj) {
+        function appendTextConfirm(list) {
+            if(list.length <= 1){
+                return '';
+            } else {
+                return ' 포함 ' + list.length + '건'
+            }
+        }
+        var idx = $(obj).closest('.modal-body').attr("data-value");
+        var tbody = iModal.find('.usage_list');
+        $.post('/Client/selectClientSalesAjax.do', { idx : idx }, function (data) {
+            tbody.empty();
+            if(data.code == 902)alert("Error code :: " + data.code);
+            else if(data.code == 900)tbody.append('<tr><td scope="row" colspan="3">최근 판매내역이 없습니다.</td></tr>');
+            else data.forEach(function (item) {
+                    // console.log(item);
+                    var sale = item.sale_resource;
+                    var status = item.status;
+                    if(status == 0){
+                        var i = 0;
+                        sale.forEach(function (data) {
+                            var total_cost = 0, total_exhaust = 0;
+                            if(uk(data.empl2_idx) == ''){
+                                total_cost = data.empl1_cost;
+                                total_exhaust = data.empl1_exhaust;
+                            } else {
+                                total_cost = Number(data.empl1_cost) + Number(data.empl2_cost);
+                                total_exhaust = Number(data.empl1_exhaust) + Number(data.empl2_exhaust);
+                            }
+                            var tr = document.createElement('tr');
+                            tr.setAttribute('data-toggle', 'tooltip');
+                            tr.setAttribute('data-placement', 'left');
+                            tr.setAttribute('title', item.memo);
+                            var td1 = '<th scope="row" rowspan="' + sale.length + '">' + item.date + '</th>',
+                                td2 = '<td><p>' + data.services_name + '</p></td>' +
+                                    '<td>' + comma(total_cost) + ' 원</td>' +
+                                    '<td>' + comma(total_exhaust) + ' 원</td>' +
+                                    '<td>결제</td>',
+                                td = '';
+                            //console.log(i);
+                            if (i == 0) td = td1 + td2;
+                            else td = td2;
+                            tr.innerHTML = td;
+                            tbody.append(tr);
+                            if(i == sale.length) i = 0;
+                            else i++;
+                        });
+                    }
+                    else if(status == 1){
+                        var tr = document.createElement('tr');
+                        tr.setAttribute('data-toggle', 'tooltip');
+                        tr.setAttribute('data-placement', 'left');
+                        tr.setAttribute('title', item.memo);
+                        var td = '<th scope="row">' + item.date + '</th><td><p>' + item.refund_name + appendTextConfirm(sale) + '</p></td><td></td><td></td><td>환불</td>';
+                        tr.innerHTML = td;
+                        tbody.append(tr);
+                    }
+                    else if(status == 2){
+                        var tr = document.createElement('tr');
+                        tr.setAttribute('data-toggle', 'tooltip');
+                        tr.setAttribute('data-placement', 'left');
+                        tr.setAttribute('title', item.memo);
+                        var td = '<th scope="row">' + item.date + '</th><td><p>미수금 ' + numberWithCommas(item.total_cost) + '원</p></td><td></td><td></td><td>결제</td>';
+                        tr.innerHTML = td;
+                        tbody.append(tr);
+                    }
+                    else if(status == 3){
+                        var tr = document.createElement('tr');
+                        tr.setAttribute('data-toggle', 'tooltip');
+                        tr.setAttribute('data-placement', 'left');
+                        tr.setAttribute('title', item.memo);
+                        var td = '<th scope="row">' + item.date + '</th><td><p>' + sale[0].services_name + appendTextConfirm(sale) + '</p></td><td></td><td></td><td>판매취소</td>';
+                        tr.innerHTML = td;
+                        tbody.append(tr);
+                    }
+                });
+        }, 'json').fail(function (error) {alert(error.status);});
+    }
+
+    <%--var ticket_detail = ${ticket_detail};--%>
+
+    /*function add_resource(selected){
+        if(selected.val() == '선택'){
+            alert('서비스를 선택한후 눌러주십시오.');
+            return false;
+        } else {
+            var column = selected.attr('data-value');
+            var data = selected.val();
+            data = data.split('／');
+            var resource = JSON.parse(data[2]);
+            var date = new Date();
+            /!* 유효기간 계산 *!/
+            date.setMonth(date.getMonth() + parseInt(resource.validity));
+            /!* Date Format yyyy-mm-dd *!/
+            var validity = $.datepicker.formatDate('yy-mm-dd', date);
+            var ul = document.createElement("ul");
+            var str = "<li style='width: 30%'>" +
+                "<p data-value='" + data[0] + "'><i class='fa fa-close' name='delete'></i><span name='name'>" + data[1] + "</span></p>" +
+                "</li>" +
+                "<li class='div-datapick' style='width: 35%'>" +
+                "<button type='button' class=''><i class='fas fa-calendar-alt'></i></button>" +
+                "<input type='text' name='validity' value='" + validity + "' class='' readonly>" +
+                "</li>";
+            if(column == 'ticket'){
+                var cost = data[3];
+                str += "<li style='width: 33.6%'>" +
+                    "<input type='number' name='ticket' value='" + resource.count + "' onkeypress='onlyInt(this)' maxlength='2'>" +
+                    "<input type='hidden' name='cost' value='" + (parseInt(cost) / parseInt(resource.count)).toFixed(0) + "'>" +
+                    "</li>";
+            }
+            else if(column == 'prepaid'){
+                str +=  "<li style='width: 33.6%'>" +
+                    "<input type='number' name='prepaid' value='" + resource.acc_cost + "' onkeypress='onlyInt(this)'>" +
+                    "</li>";
+            }
+            else if(column == 'product'){
+                str = '';
+            }
+            ul.innerHTML = str;
+            selected.parent().next().prepend(ul);
+            $(ul).attr('data-value', '0');
+            /!* 회원권, 티켓 생성시 데이터 피커 적용 *!/
+            $('input[name=validity]').datepicker({
+                dateFormat: 'yy-mm-dd',
+                inline: true,
+                showOtherMonths: true,
+                showMonthAfterYear: true,
+                dayNames: ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'],
+                dayNamesMin: ['일', '월', '화', '수', '목', '금', '토'],
+                monthNamesShort: ['1','2','3','4','5','6','7','8','9','10','11','12'],
+                monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
+            });
+            add_cancel(selected);
+        }
+    }*/
+
+    /*function add_cancel(obj){
+        var parent = $(obj).parent();
+        /!* select 초기화 *!/
+        parent.find('select').val('선택');
+        parent.find('select').niceSelect('update');
+        /!* view change *!/
+        parent.css('display', 'none');
+        parent.prev().find('button').css('display', 'block');
+    }*/
+
+    /*$('button[name=add_accumulate]').click(function () {
+        var parent = $(this).parent();
+        /!* view change *!/
+        $(this).css('display', 'none');
+        parent.next().css('display', 'block');
+    });*/
+
+    /*$('#ticket_cate').change(function () {
+        var cate = $(this).val();
+        var str = '<option>선택</option>';
+        $('#ticket_detail').empty();
+        if(cate != '선택') {
+            ticket_detail.forEach(function (item) {
+                if(cate == item.category) str += "<option value='" + item.idx + "／" + item.name + "／" + item.resource +  "／" + item.cost + "'>" + item.name + "</option>";
+            });
+        }
+        $('#ticket_detail').append(str);
+        $('#ticket_detail').niceSelect('update');
+    });*/
+
+    <%-- prepaid 와 ticket의 key : value 를 만드는 메서드 --%>
+    function getNameValues(names, type) {
+        if(names.length == 0) return '[]';
+        var jList = [];
+        names.each(function (k, v) {
+            var nVal = {}, ul = $(v).closest("ul");
+            if(type == "prepaid") nVal["cost"] = Math.floor($(v).attr('data-value'));
+            else if(type == "ticket"){
+                nVal["count"] = Math.floor($(v).attr('data-value'));
+                nVal["cost"] = Math.floor($(ul).find('input[name=cost]').val());
+            }
+            nVal["idx"] = $(ul).find("p[name=idx]").attr("data-value");
+            nVal["name"] = $(ul).find("span[name=name]").attr("data-value");
+            nVal["validity"] = $(ul).find("input[name=validity]").val();
+            nVal["sale_idx"] = $(ul).find("input[name=sale_idx]").val();
+            jList.push(nVal);
+        });
+        return JSON.stringify(jList);
+    }
+
+    function setProductJSON(elements) {
+        if(elements.length == 0) return '[]';
+        var pList = [];
+        elements.each(function (i, e) {
+            var json = {}, product_list = [];
+            json["name"] = $(e).find('h5[name=folder_name]').text();
+            $(e).find('.keep-product > ul > li').each(function (a, b) {
+                product_list.push($(b).find('p').text());
+            });
+            var products = replaceAll(product_list.toString(), ',', 'ː');
+            json["products"] = products;
+            pList.push(json);
+        });
+        return JSON.stringify(pList);
+    }
+
+    <%-- 요소 값들을 json 적재 --%>
+    function toJsonElement(body, list, element) {
+        list.forEach(function (data) {
+            if(element != 'p') body[data] = iModal.find(element+'[name='+data+']').val();
+            else body[data] = iModal.find(element+'[name='+data+']').attr('data-value');
+        });
+        return body;
+    }
+
+    <%-- yyyy-mm-dd 형식 만들기 --%>
+    function makeBirth(list) {
+        var birth = '';
+        list.forEach(function (data) { birth += iModal.find('input[name='+data+']').val()+"-"; });
+        return birth.substring(0, birth.length-1);
+    }
+
+    <%-- 고객정보 수정 --%>
+    $('#cUpdate_btn').click(function () {
+        if($('#c-info-phone').val() != $('#org-phone').val() && !phone_number_check){
+            alert('전화번호 변경을 위해서 중복확인을 진행해주세요.');
+            return false;
+        }
+        <%-- 인자 Json에 적재 --%>
+        var input = ["name", "code"];
+        var p = ["total_pay", "point", "miss_cost"];
+        var select = ["rank", "visit"];
+        var birth = ["year", "month", "day"];
+        var prepaid = iModal.find("p[name=prepaid]");
+        var ticket = iModal.find("p[name=ticket]");
+        var product = $('#keep-folder > ul > li');
+        var body = {};
+
+        body["phone"] = replaceAll(iModal.find('input[name=phone]').val(), '-', '');
+        body["prepaid"] = getNameValues(prepaid, "prepaid");
+        body["ticket"] = getNameValues(ticket, "ticket");
+        body["product"] = setProductJSON(product);
+        body["memo"] = iModal.find('textarea[name=memo]').val();
+        body["birth"] = makeBirth(birth);
+        body["idx"] = iModal.find('.modal-body').attr("data-value");
+        body["status"] = iModal.find('input[name=status]:checked').val();
+
+        if($("#c-info-sms-check").is(":checked")) body["sms_check"] = 1;
+        else body["sms_check"] = 0;
+
+        body = toJsonElement(body, input, "input");
+        body = toJsonElement(body, p, "p");
+        body = toJsonElement(body, select, "select");
+        //console.log(body); // 인자 확인용
+        if(body.name == ''){
+            alert('고객의 이름을 적어주세요.');
+            iModal.find('input[name=name]').focus();
+            return false;
+        }
+
+        var con = confirm("사용자의 정보를 저장 하시겠습니까?");
+        if(con){
+            $.post('/Client/updateClientInfoAjax.do', body, function (data) {
+                if(data.code == 200) location.href = document.URL;
+                else if (data.code == 201) alert("고객 코드가 중복되었습니다.\n코드를 확인해 주세요.");
+                else if (data.code == 902) alert('코드 에러');
+            },'json').fail(function (error) {
+                alert(error.status);
+            });
+        }
+    });
+</script>
+
+<%-- 제품 script --%>
+<script>
+    <%-- 폴더 관련 함수 --%>
+    /* 폴더 생성 */
+    $('#folder_create_btn').click(function () {
+        var new_li = document.createElement('li');
+        var name_input = $('#folder_name');
+        if(name_input.val() == ''){
+            alert('폴더명을 입력해주세요.');
+            return false;
+        } else {
+            var div = '' +
+                '<div class="keep-product-add">' +
+                    '<div class="keep-folder-top">' +
+                        '<h5 name="folder_name">' + name_input.val() + '</h5>' +
+                        '<div name="divToggle" class="folder-name-editer" style="display: none;">' +
+                            '<input type="text" placeholder="수정할 폴더명을 입력해주세요." name="modify_name">' +
+                            '<button onclick="folder_save(this)">저장</button>' +
+                            '<button onclick="folder_modify(this)" name="cancel">취소</button>' +
+                        '</div>' +
+                        '<div class="keep-folder-top-btn" name="folder_tool">' +
+                            '<button type="button" onclick="folder_modify(this)" name="modify">수정</button>' +
+                            '<button type="button" onclick="folder_delete(this)">삭제</button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div>' +
+                        '<input type="text" placeholder="제품명을 입력해주세요." name="product_name">' +
+                        '<button onclick="keep_product_create(this)">추가</button>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="keep-product">' +
+                    '<ul></ul>' +
+                '</div>';
+            new_li.innerHTML = div;
+            $('#keep-folder').children('ul').prepend(new_li);
+            name_input.val('');
+            $('#create_toggle').trigger('click');
+        }
+    });
+
+
+    /* 제품 폴더명 변경 저장 버튼 */
+    function folder_save(obj) {
+        var li = $(obj).closest('li');
+        var name = li.find('input[name=modify_name]');
+        if(name.val() == ''){
+            alert('폴더명을 적어주세요.');
+            return false;
+        } else {
+            li.find('h5[name=folder_name]').text(name.val());
+            name.val('');
+            $(obj).next().trigger('click');
+        }
+    }
+
+    /* 제품 폴더명 수정 버튼 */
+    function folder_modify(obj){
+        var li = $(obj).closest('li');
+        var name = $(obj).attr('name');
+        if(name == 'cancel') li.find('div[name=folder_tool]').css('display', 'inline-block');
+        else if(name == 'modify') li.find('div[name=folder_tool]').css('display', 'none');
+
+        var befor = $(li).find('h5[name=folder_name]').text();
+        $(li).find('input[name=modify_name]').val(befor);
+
+        li.find('div[name=divToggle]').toggle();
+    }
+
+    /* 제품 폴더 삭제 버튼 */
+    function folder_delete(obj){ $(obj).closest('li').remove(); }
+
+    <%-- 보유제품 관련 함수 --%>
+
+    /* 제품 추가 */
+    function keep_product_create(obj) {
+        var product_name = $(obj).prev('input');
+        if(product_name.val() == ''){
+            alert('제품명을 입력해주세요.');
+            return false;
+        } else {
+            var li = $(obj).closest('li');
+            var new_product = document.createElement('li');
+            var element = '' +
+                '<p>' + product_name.val() + '</p>' +
+                '<button type="button" onclick="product_keep_delete(this)"><i class="fas fa-times"></i></button>';
+            new_product.innerHTML = element;
+            product_name.val('');
+            li.find('.keep-product').children('ul').prepend(new_product);
+        }
+    }
+
+    /* 제품 하나 삭제 */
+    function product_keep_delete(obj){
+        $(obj).closest('li').remove();
+    }
+    /* 포인트 or 미수금 수정 */
+    $(document).on("click", ".ci_show_number[name=point], .ci_show_number[name=miss_cost]", function() {
+        var value = $(this).text();
+        var name = $(this).attr("name");
+        if(name == "point"){
+            // div.append('<input type="text" id="custom_point" value="' + value + '" style="color: #0c0c0c;">');
+            $('#custom_point').val(uncomma(value));
+            $('#custom_point').show();
+            $('#custom_point').select();
+        } else{
+            // div.append('<input type="text" id="custom_miss_cost" value="' + value + '" style="color: #0c0c0c;">');
+            $('#custom_point').val(uncomma(value));
+            $('#custom_miss_cost').show();
+            $('#custom_miss_cost').select();
+        }
+        $(this).hide();
+    });
+
+    $(document).on('focusout', '#custom_point, #custom_miss_cost', function(){
+        var value = $(this).val();
+        var id = $(this).attr("id");
+        var div = $(this).closest("div");
+
+        $(this).hide();
+        if(id == "custom_point"){
+            div.find("p[name=point]").text(comma(value));
+            div.find("p[name=point]").attr("data-value", value);
+            div.find("p[name=point]").show();
+        } else {
+            div.find("p[name=miss_cost]").text(comma(value));
+            div.find("p[name=miss_cost]").attr("data-value", value);
+            div.find("p[name=miss_cost]").show();
+
+        }
+    });
+    $(document).on('keydown', '#custom_point, #custom_miss_cost', function(key){
+        if (key.keyCode == 13) {
+            $(this).trigger('focusout');
+        }
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $("body").tooltip({ selector: '[data-toggle=tooltip]' });
+    });
+</script>

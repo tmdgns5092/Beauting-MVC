@@ -1,0 +1,208 @@
+<%@ page pageEncoding="utf-8" %>
+<div class="resSidePopupViews" id="resSidePopupViews" style="transition: all .001ms">
+    <div></div>
+
+
+
+    <ul class="calendar-popup-content popup-tel">
+        <li>
+            <p id="resSidePopupViews-tel"></p>
+        </li>
+    </ul>
+    <ul class="calendar-popup-content popup-prepayment">
+        <p>선불권</p>
+        <li>
+            <ul id="resSidePopupViews-prepaid"></ul>
+        </li>
+    </ul>
+    <ul class="calendar-popup-content popup-prepayment">
+        <p>티켓</p>
+        <li>
+            <ul id="resSidePopupViews-ticket"></ul>
+        </li>
+    </ul>
+    <ul class="calendar-popup-content popup-history">
+        <p>최근내역</p>
+        <li>
+            <ul>
+                <li>
+                    <p id="resSidePopupViews-last-name"></p>
+                    <p class="text-point02" id="resSidePopupViews-last-date"></p>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <ul class="calendar-popup-content popup-product">
+        <li>
+            <ul id="resSidePopupViews-product"></ul>
+        </li>
+    </ul>
+    <ul class="calendar-popup-content popup-memo">
+        <li><p id="resSidePopupViews-memo"></p></li>
+    </ul>
+</div>
+
+<script>
+    $(document).on('mouseover', '.popup-msj', function(e){
+
+        var phone = $(this).find('input[name=popup-msg-phone]').val();
+        var memo = $(this).find('input[name=popup-msg-memo]').val();
+        var history_name = uk($(this).find('input[name=popup-msg-res-history-name]').val());
+        var history_date = uk($(this).find('input[name=popup-msg-res-history-date]').val());
+
+        // 선불권
+        var prepaid_str = $(this).find('input[name=popup-msg-has-prepaid]').val();
+        var prepaid_array = prepaid_str.split('_______');
+        var prepaid_tmp = '';
+        for(var i = 0; i < prepaid_array.length; i++){
+            prepaid_array[i] = replaceAll(prepaid_array[i], '{', '{"');
+            prepaid_array[i] = replaceAll(prepaid_array[i], ':', '" : "');
+            prepaid_array[i] = replaceAll(prepaid_array[i], ',', '" , "');
+            prepaid_array[i] = replaceAll(prepaid_array[i], '}', '"}');
+            //console.log("prepaid : " + prepaid_array[i]);
+            if(uk(prepaid_array[i]) != ""){
+                var tmp_obj = JSON.parse(prepaid_array[i]);
+                prepaid_tmp += '<li>' +
+                    '   <p>' + tmp_obj.name + '</p>' +
+                    '   <p class="text-point">' + numberWithCommas(uk(tmp_obj.cost)) + '</p>' +
+                    '</li>';
+            }
+        }
+
+        // 티켓
+        var ticket_str = $(this).find('input[name=popup-msg-has-ticket]').val();
+        var ticket_array = ticket_str.split('_______');
+        var ticket_tmp = '';
+        for(var i = 0; i < ticket_array.length; i++){
+            ticket_array[i] = replaceAll(ticket_array[i], '{', '{"');
+            ticket_array[i] = replaceAll(ticket_array[i], ':', '" : "');
+            ticket_array[i] = replaceAll(ticket_array[i], ',', '" , "');
+            ticket_array[i] = replaceAll(ticket_array[i], '}', '"}');
+            //console.log("ticket : " + ticket_array[i]);
+            if(uk(ticket_array[i]) != ""){
+                var tmp_obj = JSON.parse(ticket_array[i]);
+                ticket_tmp += '<li>' +
+                    '   <p>' + tmp_obj.name + '</p>' +
+                    '   <p class="text-point">' + uk(tmp_obj.count) + '</p>' +
+                    '</li>';
+            }
+        };
+
+        // 제품
+        var product_str = $(this).find('input[name=popup-msg-has-product]').val();
+        var product_array = product_str.split('_______');
+        var product_tmp = '';
+        for(var i = 0; i < product_array.length; i++){
+            product_array[i] = replaceAll(product_array[i], '{', '{"');
+            product_array[i] = replaceAll(product_array[i], ':', '" : "');
+            product_array[i] = replaceAll(product_array[i], '}', '"}');
+            //console.log("product : " + product_array[i]);
+            if(uk(product_array[i]) != ""){
+                var tmp_obj = JSON.parse(product_array[i]);
+                product_tmp += '<li><p>' + tmp_obj.name + '</p></li>';
+            }
+        };
+        // 메모 줄바꿈
+        memo = replaceAll(memo, '\n', '<br>');
+
+        $('#resSidePopupViews-tel').text('');
+        $('#resSidePopupViews-prepaid').empty();
+        $('#resSidePopupViews-ticket').empty();
+        $('#resSidePopupViews-last-name').text('');
+        $('#resSidePopupViews-last-date').text('');
+        $('#resSidePopupViews-product').empty();
+        $('#resSidePopupViews-memo').text('');
+
+        $('#resSidePopupViews-tel').text(changeFormatPhone(phone));
+        $('#resSidePopupViews-prepaid').append(prepaid_tmp);
+        $('#resSidePopupViews-ticket').append(ticket_tmp);
+        $('#resSidePopupViews-last-name').text(history_name);
+        $('#resSidePopupViews-last-date').text(history_date);
+        $('#resSidePopupViews-product').append(product_tmp);
+        $('#resSidePopupViews-memo').html(memo);
+
+        /* 클릭 클릭시 클릭을 클릭한 위치 근처에 레이어가 나타난다. */
+            // $('.reservation-td').click(function(e) {
+        var sWidth = window.innerWidth;
+        var sHeight = window.innerHeight;
+
+        var oWidth = $('#resSidePopupViews').width();
+        var oHeight = $('#resSidePopupViews').height();
+
+        // 레이어가 나타날 위치를 셋팅한다.
+        var divLeft = e.clientX - 20;
+        var divTop = e.clientY - 15;
+
+        // 레이어가 화면 크기를 벗어나면 위치를 바꾸어 배치한다.
+        if (divLeft + oWidth > sWidth) divLeft -= oWidth;
+        if (divTop + oHeight > sHeight) divTop -= oHeight;
+
+        // 레이어 위치를 바꾸었더니 상단기준점(0,0) 밖으로 벗어난다면 상단기준점(0,0)에 배치하자.
+        if (divLeft < 0) divLeft = 0;
+        if (divTop < 0) divTop = 0;
+
+        $('#resSidePopupViews').css({
+            "top": divTop,
+            "left": divLeft,
+            "position": "absolute"
+        }).show();
+    });
+    $(document).on('mouseout', '.popup-msj', function(){
+        $('#resSidePopupViews').hide();
+    });
+
+
+    $(document).on('mouseover', '.un-msj', function(e){
+        var memo = $(this).find('input[name=popup-msg-memo]').val();
+        // 메모 줄바꿈
+        memo = replaceAll(memo, '\n', '<br>');
+
+        $('#resSidePopupViews-tel').text('');
+        $('#resSidePopupViews-prepaid').empty();
+        $('#resSidePopupViews-ticket').empty();
+        $('#resSidePopupViews-last-name').text('');
+        $('#resSidePopupViews-last-date').text('');
+        $('#resSidePopupViews-product').empty();
+        $('#resSidePopupViews-memo').text('');
+
+        $('#resSidePopupViews-memo').html(memo);
+
+        /* 클릭 클릭시 클릭을 클릭한 위치 근처에 레이어가 나타난다. */
+        // $('.reservation-td').click(function(e) {
+        var sWidth = window.innerWidth;
+        var sHeight = window.innerHeight;
+
+        var oWidth = $('#resSidePopupViews').width();
+        var oHeight = $('#resSidePopupViews').height();
+
+        // 레이어가 나타날 위치를 셋팅한다.
+        var divLeft = e.clientX - 20;
+        var divTop = e.clientY - 15;
+
+        // 레이어가 화면 크기를 벗어나면 위치를 바꾸어 배치한다.
+        if (divLeft + oWidth > sWidth) divLeft -= oWidth;
+        if (divTop + oHeight > sHeight) divTop -= oHeight;
+
+        // 레이어 위치를 바꾸었더니 상단기준점(0,0) 밖으로 벗어난다면 상단기준점(0,0)에 배치하자.
+        if (divLeft < 0) divLeft = 0;
+        if (divTop < 0) divTop = 0;
+
+        $('.popup-tel').hide();
+        $('.popup-prepayment').hide();
+        $('.popup-history').hide();
+        $('.popup-product').hide();
+
+        $('#resSidePopupViews').css({
+            "top": divTop,
+            "left": divLeft,
+            "position": "absolute"
+        }).show();
+    });
+    $(document).on('mouseout', '.un-msj', function(){
+        $('.resSidePopupViews').hide();
+        $('.popup-tel').show();
+        $('.popup-prepayment').show();
+        $('.popup-history').show();
+        $('.popup-product').show();
+    });
+</script>

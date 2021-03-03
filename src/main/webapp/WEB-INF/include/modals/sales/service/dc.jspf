@@ -1,0 +1,89 @@
+<%@ page pageEncoding="utf-8" %>
+
+<div class="modal fade" id="service-dc-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="dc-modal modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-body">
+                <button class="close-btn02" data-dismiss="modal"><i class="fas fa-times"></i></button>
+                <div class="nav-tabs-custom">
+                    <ul class="nav nav-tabs">
+                        <li class="active" name="cost-tab"><a href="#cost-cd" data-toggle="tab">금액 할인</a></li>
+                        <li name="precent-tab"><a href="#precent-dc" data-toggle="tab">퍼센트 할인</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <!-- 금액 할인 -->
+                        <div class="active tab-pane" id="cost-cd">
+                            <input type="text" id="main-dc-cost" value="0" onkeydown="onlyNumber(this)"/>
+                            <table class="" name="dc-table-cost">
+                                <tr>
+                                    <td width="33.333%">7</td>
+                                    <td width="33.333%">8</td>
+                                    <td width="33.333%">9</td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>5</td>
+                                    <td>6</td>
+                                </tr>
+                                <tr>
+                                    <td>1</td>
+                                    <td>2</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr>
+                                    <td>0</td>
+                                    <td>00</td>
+                                    <td>000</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>초기화</td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <!-- /.금액 할인 -->
+                        <!-- 퍼센트 할인 -->
+                        <div class="tab-pane" id="precent-dc">
+                            <input type="text" id="main-dc-precnet" value="0"/>
+                            <table class="" name="dc-table-precent">
+                                <tr>
+                                    <td width="33.333%">7</td>
+                                    <td width="33.333%">8</td>
+                                    <td width="33.333%">9</td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>5</td>
+                                    <td>6</td>
+                                </tr>
+                                <tr>
+                                    <td>1</td>
+                                    <td>2</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>0</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>초기화</td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <!-- /.퍼센트 할인 -->
+                    </div>
+                    <!-- /.tab-content -->
+                </div>
+                <!-- /.nav-tabs-custom -->
+                <div class="content02-save">
+                    <button type="button" onclick="submittDC()">적용</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

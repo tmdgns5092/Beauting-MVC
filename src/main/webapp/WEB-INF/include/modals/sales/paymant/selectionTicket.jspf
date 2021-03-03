@@ -1,0 +1,56 @@
+<%@ page pageEncoding="utf-8" %>
+
+<div class="modal fade" id="selection-ticket" tabindex="-1" role="dialog" aria-labelledby="selection-ticket"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="selection-ticket-modal">
+            <div class="modal-header" style="text-align: right">
+                <div class="close-btn" data-dismiss="modal">
+                    <img src="/static/test-img/close-btn.png" alt="X버튼 이미지">
+                </div>
+            </div>
+            <div class="modal-body">
+                <table class="table-bordered table">
+                    <thead>
+                    <tr>
+                        <th width="10%" class="text-center">선택</th>
+                        <th width="40%">티켓명</th>
+                        <th width="20%" class="text-center">잔여 횟수</th>
+                        <th width="30%">만료일</th>
+                    </tr>
+                    </thead>
+                </table>
+                <div style="overflow: auto; width: 100%; height: 200px;">
+                    <table class="selection-table-bottom">
+                        <tbody>
+                        <tr class="text-center">
+                            <td width="10%">
+                                <input type="radio">
+                            </td>
+                            <td width="40%"><p>Lorem ipsum.</p></td>
+                            <td width="20%" class="text-center"><p>5<span>회</span></p></td>
+                            <td width="30%"><p>2018.00.00</p></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="selection-bottom-content">
+                    <ul>
+                        <li>
+                            <p>선택 티켓명</p>
+                            <p>Lorem ipsum. <small>5<span>회</span></small> </p>
+                        </li>
+                        <li>
+                            <p>사용 티켓 횟수</p>
+                            <input type="text">
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-bottom">
+                <button class="modal-btn x-btn" data-dismiss="modal">취소</button>
+                <button class="modal-btn o-btn">등록</button>
+            </div>
+        </div>
+    </div>
+</div>

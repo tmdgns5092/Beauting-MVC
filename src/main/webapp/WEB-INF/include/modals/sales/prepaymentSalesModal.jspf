@@ -1,0 +1,973 @@
+<%@ page pageEncoding="utf-8" %>
+
+<!-- 정액/선불권 선택 모달 -->
+<div class="modal fade" id="sales-prepayment" tabindex="-1" role="dialog" aria-labelledby="sales-prepayment" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <div class="sales-prepayment-modal">
+            <div class="modal-body">
+                <button class="close-btn02"  data-dismiss="modal"><i class="fas fa-times"></i></button>
+                <div class="modal-body-left">
+                <%--<div class="servicemodal-content">--%>
+                    <%--&lt;%&ndash; 정액 / 선불권 카테고리 ul li &ndash;%&gt;--%>
+                    <%--<ul id="prepayment_cate_box">--%>
+                    <%--</ul>--%>
+                <%--</div>--%>
+                    <h4>판매 선불권 선택</h4>
+                <div class="servicemodal-content">
+                    <%-- 정액 / 선불권 디테일 ul li --%>
+                    <ul id="prepayment_detail_box">
+                    </ul>
+                </div>
+                <input type="hidden" id="pre_category_name" value="선불권">
+                <table class="table table-bothered">
+                    <thead>
+                    <tr>
+                        <th width="25%">상품명</th>
+                        <th width="25%">판매금액</th>
+                        <th width="25%">적립금액</th>
+                        <th width="25%">유효기간&nbsp;(개월)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <p id="tmp_name"></p><input type="hidden" id="idx_tmp">
+                        </td>
+                        <td>
+                            <input type="text" id="payment_cost" onkeydown="onlyNumber(this)" readonly>
+                        </td>
+                        <td>
+                            <input type="text" id="payment_acc_cost" maxlength="10" oninput="maxLengthCheck(this)" onkeydown="onlyNumber(this)">
+                            <input type="hidden" id="acc_cost_back_up">
+                        </td>
+                        <td>
+                            <input class="w-192" type="text" id="payment_validity" maxlength="2" oninput="maxLengthCheck(this)" onkeydown="onlyNumber(this)">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <%-------------------------------------------------------------------------------------------------%>
+                <%-------------------------------------------- 직원 선택 --------------------------------------------%>
+                <%-------------------------------------------------------------------------------------------------%>
+                    <h4>직원별 판매 금액 입력</h4>
+                <div class="prepay-member-list">
+                    <div class="prepayment-select">
+                        <select id="prepayment_pay_empl_list_box1">
+                            <option value="">선택</option>
+                        </select>
+                        <input type="text" id="prepaid_employee_one_cost" onkeydown="onlyNumber(this)" value="0">
+                        <button id="employeePlus" onClick="plusEmployee()"><i class="glyphicon glyphicon-plus"></i></button>
+                    </div>
+                    <div class="prepayment-input" id="empl_two_box_div">
+                        <select id="prepayment_pay_empl_list_box2" style="display: none;">
+                            <option value="">선택</option>
+                        </select>
+                        <input type="text" id="prepaid_employee_two_cost" onkeydown="onlyNumber(this)" style="display: none;" value="0">
+                        <button id="employeeMinus" style="display: none;" onClick="minusEmployee()"><i class="glyphicon glyphicon-minus"></i></button>
+                    </div>
+                </div>
+                <%-------------------------------------------------------------------------------------------------%>
+                <%-------------------------------------------- /. 직원 선택 --------------------------------------------%>
+                <%-------------------------------------------------------------------------------------------------%>
+
+                <%--선불권 합치기--%>
+                <%--<input type="checkbox" value="" id="merge-chk1">--%>
+                <%--<label for="merge-chk1">--%>
+                    <%--선불권 합치기--%>
+                <%--</label>--%>
+                <div id="chk-div1" class="prepay_plus_content" style="display: none;">
+                    <input type="hidden" id="total_cost_by_fee" value="0">
+                    <input type="hidden" id="sum_hss_prepaid_idx">
+                    <input type="hidden" id="sum_hss_prepaid_cost">
+                    <input type="hidden" id="sum_hss_prepaid_name">
+                    <input type="hidden" id="sum_hss_prepaid_sales_idx">
+                    <input type="hidden" id="sum_hss_prepaid_validity">
+                    <table class="merge-table">
+                        <thead>
+                        <tr>
+                            <th width="33.333%">선불권 선택</th>
+                            <th width="33.333%">남은 금액</th>
+                            <th width="33.333%">남은 유효기간</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                <select class="wide" name="prepaid_sum_select_tag" id="prepaid_sum_select_tag">
+                                </select>
+                            </td>
+                            <td>
+                                <p id="prepaid_sum_cost"></p>
+                            </td>
+                            <td>
+                                <p id="prepaid_sum_validity"></p>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+                <%-------------------------------------------------------------------------------------------------%>
+                <%-------------------------------------------- 메모 --------------------------------------------%>
+                <%-------------------------------------------------------------------------------------------------%>
+                <div class="prepay_memo">
+                    <textarea id="prepaid_memo" placeholder="판매 메모를 입력해주세요."></textarea>
+                </div>
+                <%-------------------------------------------------------------------------------------------------%>
+                <%-------------------------------------------- /.메모 --------------------------------------------%>
+                <%-------------------------------------------------------------------------------------------------%>
+                <div class="modal-body-right">
+                    <table id="right_tables">
+                        <tbody>
+                        <tr class="bb-2">
+                            <%--<td>합계 금액<span>판매금액 + 적립금액</span></td>
+                            <td><p id="right_sum_cost">0</p><span>원</span></td>--%>
+                            <td>합계 금액</td>
+                            <td><p id="right_sum_cost">0</p><span>원</span></td>
+                        </tr>
+                        <tr name="contens">
+                            <td>할인
+                                <button class="sale-btn" style="display: none;">선택</button>
+                                <%-- 할인 선택 모달 --%>
+                                <div class="sale-btn-content">
+                                    <input type="text" id="sale_pay_text" onkeydown="onlyNumber(this)" placeholder="할인 금액을 입력해주세요.">
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            <td width="20%" class="pay-btns"><p>1</p></td>
+                                            <td width="20%" class="pay-btns"><p>2</p></td>
+                                            <td width="20%" class="pay-btns"><p>3</p></td>
+                                            <td class="pay-btns"><p>천원</p></td>
+                                            <td class="pay-btns"><p>만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>4</p></td>
+                                            <td class="pay-btns"><p>5</p></td>
+                                            <td class="pay-btns"><p>6</p></td>
+                                            <td class="won-btns" colspan="2"><p>금액</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>7</p></td>
+                                            <td class="pay-btns"><p>8</p></td>
+                                            <td class="pay-btns"><p>9</p></td>
+                                            <td class="percent-btns" colspan="2"><p>%</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>0</p></td>
+                                            <td class="pay-btns"><p>00</p></td>
+                                            <td class="pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                            <td colspan="2"><p class="modal-content-close">취소</p></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td><p name="sale-cost" id="sales-cost">0</p><p id="sale_type">%</p></td>
+                        </tr>
+                        <tr name="contens">
+                            <td>현금
+                                <button class="money-btn" style="display: none;">선택</button>
+                                <%-- 현금 선택 모달 --%>
+                                <div class="pay-btn-content">
+                                    <input type="text" id="prepayment_pay_text" onkeydown="onlyNumber(this)" placeholder="금액을 입력해주세요.">
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            <td width="20%" class="pay-btns"><p>1</p></td>
+                                            <td width="20%" class="pay-btns"><p>2</p></td>
+                                            <td width="20%" class="pay-btns"><p>3</p></td>
+                                            <td class="pay-btns"><p>천원</p></td>
+                                            <td class="pay-btns"><p>만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>4</p></td>
+                                            <td class="pay-btns"><p>5</p></td>
+                                            <td class="pay-btns"><p>6</p></td>
+                                            <td class="pay-btns" colspan="2"><p>십만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>7</p></td>
+                                            <td class="pay-btns"><p>8</p></td>
+                                            <td class="pay-btns"><p>9</p></td>
+                                            <td class="pay-cost-submit" colspan="2"><p>저장</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>0</p></td>
+                                            <td class="pay-btns"><p>00</p></td>
+                                            <td class="pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                            <td colspan="2"><p class="modal-content-close">취소</p></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td><p name="pay-cost" id="pay-cost">0</p><span>원</span></td>
+                        </tr>
+                        <tr name="contens">
+                            <td>카드
+                                <button class="card-btn" style="display: none;">선택</button>
+                                <%-- 카드 선택 모달 --%>
+                                <div class="card-btn-content">
+                                    <input type="text" id="prepayment_card_text" onkeydown="onlyNumber(this)" placeholder="금액을 입력해주세요.">
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            <td class="pay-btns" width="20%"><p>1</p></td>
+                                            <td class="pay-btns" width="20%"><p>2</p></td>
+                                            <td class="pay-btns" width="20%"><p>3</p></td>
+                                            <td class="pay-btns"><p>천원</p></td>
+                                            <td class="pay-btns"><p>만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>4</p></td>
+                                            <td class="pay-btns"><p>5</p></td>
+                                            <td class="pay-btns"><p>6</p></td>
+                                            <td colspan="2" class="pay-btns"><p>십만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>7</p></td>
+                                            <td class="pay-btns"><p>8</p></td>
+                                            <td class="pay-btns"><p>9</p></td>
+                                            <td class="card-cost-submit" colspan="2"><p>저장</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>0</p></td>
+                                            <td class="pay-btns"><p>00</p></td>
+                                            <td class="pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                            <td colspan="2"><p class="modal-content-close">취소</p></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td><p name="card-cost" id="card-cost">0</p><span>원</span></td>
+                        </tr>
+                        <tr name="contens">
+                            <td>상품권 (매출)
+                                <button class="gift-btn" style="display: none;">선택</button>
+                                <%-- 상품권 선택 모달 --%>
+                                <div class="gift-btn-content">
+                                    <input type="text" id="prepayment_gift_text" onkeydown="onlyNumber(this)" placeholder="금액을 입력해주세요.">
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            <td class="pay-btns" width="20%"><p>1</p></td>
+                                            <td class="pay-btns" width="20%"><p>2</p></td>
+                                            <td class="pay-btns" width="20%"><p>3</p></td>
+                                            <td class="pay-btns"><p>천원</p></td>
+                                            <td class="pay-btns"><p>만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>4</p></td>
+                                            <td class="pay-btns"><p>5</p></td>
+                                            <td class="pay-btns"><p>6</p></td>
+                                            <td class="pay-btns" colspan="2"><p>십만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>7</p></td>
+                                            <td class="pay-btns"><p>8</p></td>
+                                            <td class="pay-btns"><p>9</p></td>
+                                            <td class="gift-cost-submit" colspan="2"><p>저장</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>0</p></td>
+                                            <td class="pay-btns"><p>00</p></td>
+                                            <td class="pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                            <td colspan="2"><p class="modal-content-close">취소</p></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td><p name="gift-cost" id="gift-cost">0</p><span>원</span></td>
+                        </tr>
+                        <tr name="contens">
+                            <td>기타 (매출)
+                                <button class="other-btn" style="display: none;">선택</button>
+                                <%-- 기타 선택 모달 --%>
+                                <div class="other-btn-content">
+                                    <input type="text" id="prepayment_other_text" onkeydown="onlyNumber(this)" placeholder="금액을 입력해주세요.">
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            <td class="pay-btns" width="20%"><p>1</p></td>
+                                            <td class="pay-btns" width="20%"><p>2</p></td>
+                                            <td class="pay-btns" width="20%"><p>3</p></td>
+                                            <td class="pay-btns"><p>천원</p></td>
+                                            <td class="pay-btns"><p>만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>4</p></td>
+                                            <td class="pay-btns"><p>5</p></td>
+                                            <td class="pay-btns"><p>6</p></td>
+                                            <td class="pay-btns" colspan="2"><p>십만원</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>7</p></td>
+                                            <td class="pay-btns"><p>8</p></td>
+                                            <td class="pay-btns"><p>9</p></td>
+                                            <td class="other-cost-submit" colspan="2"><p>저장</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns"><p>0</p></td>
+                                            <td class="pay-btns"><p>00</p></td>
+                                            <td class="pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                            <td colspan="2"><p class="modal-content-close">취소</p></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td><p name="other-cost" id="other-cost">0</p><span>원</span></td>
+                        </tr>
+
+
+                        <%--<tr name="contens">
+                            <td>포인트
+                                <button class="point-btn" style="display: none;">선택</button>
+                                &lt;%&ndash; 기타 선택 모달 &ndash;%&gt;
+                                <div class="point-btn-content">
+                                    <span>현재 포인트</span><p id="point_print_tag"></p><P>P</P>
+                                    <input type="text" id="prepayment_point_text" onkeydown="onlyNumber(this)" oninput="maxValueCheck(this, 1)" placeholder="금액을 입력해주세요." value="0">
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            <td class="pay-btns point-btns" width="20%"><p>1</p></td>
+                                            <td class="pay-btns point-btns" width="20%"><p>2</p></td>
+                                            <td class="pay-btns point-btns" width="20%"><p>3</p></td>
+                                            <td width="20%" class="point-cost-submit"><p>확인</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns point-btns"><p>4</p></td>
+                                            <td class="pay-btns point-btns"><p>5</p></td>
+                                            <td class="pay-btns point-btns"><p>6</p></td>
+                                            <td><p class="modal-content-close">취소</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns point-btns"><p>7</p></td>
+                                            <td class="pay-btns point-btns"><p>8</p></td>
+                                            <td class="pay-btns point-btns"><p>9</p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pay-btns point-btns"><p>0</p></td>
+                                            <td class="pay-btns point-btns"><p>00</p></td>
+                                            <td class="pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td><p name="point-cost" id="point-cost">0</p><span>p</span></td>
+                        </tr>--%>
+
+
+
+
+
+
+
+
+                        <tr class="bb-2">
+                            <td>미수금</td>
+                            <td><p id="miss_cost_text">0</p><span>원</span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="bb-2" style="padding: 0 0 10px">
+                        <label>최종 결제금액</label>
+                        <p id="right_total_pay_cost">0</p>
+                    </div>
+
+
+                    <%-- ==================================== 포인트 적립 ==================================== --%>
+                    <div class="prepay-point">
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    포인트 적립
+                                    <button onclick="prepaid_point_box_open()"><i class="glyphicon glyphicon-credit-card"></i></button>
+                                </td>
+                                <td>
+                                    <p id="prepaid_point_cost_text">0</p><p>p</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div style="position: absolute;border: 1px solid rgb(225, 225, 225);padding: 10px;background: rgb(247, 246, 251);box-shadow: rgba(0, 0, 0, 0.1) 1px 1px 3px;z-index: 1;left: 7px;display: none;" id="prepaid_modal_point">
+                            <input type="text" id="prepaid_point_text" onkeydown="onlyNumber(this)" placeholder="금액을 입력해주세요." readonly>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <td class="pay-btns" width="23%"><p>1</p></td>
+                                    <td class="pay-btns" width="23%"><p>2</p></td>
+                                    <td class="pay-btns" width="23%"><p>3</p></td>
+                                    <td width="30%" onclick="prepaid_point_fix('percent')"><p>% 적립</p></td>
+                                </tr>
+                                <tr>
+                                    <td class="pay-btns"><p>4</p></td>
+                                    <td class="pay-btns"><p>5</p></td>
+                                    <td class="pay-btns"><p>6</p></td>
+                                    <td onclick="prepaid_point_fix('money')"><p>금액적립</p></td>
+                                </tr>
+                                <tr>
+                                    <td class="pay-btns"><p>7</p></td>
+                                    <td class="pay-btns"><p>8</p></td>
+                                    <td class="pay-btns"><p>9</p></td>
+                                    <td onclick="prepaid_point_fix('cancel')"><p>취소</p></td>
+                                </tr>
+                                <tr>
+                                    <td class="pay-btns"><p>0</p></td>
+                                    <td class="pay-btns"><p>00</p></td>
+                                    <td class="pay-btns"><p><i class="fas fa-backspace"></i></p></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <%-- ==================================== /.포인트 적립 ==================================== --%>
+
+                </div>
+                <div class="content02-save">
+                    <button class="" onclick="prepayment_sale()">결제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<%--정액/선불권 모달 끝--%>
+
+<%-- prepaid pint box open --%>
+<%--<script>
+    function prepaid_point_box_open(){
+        if(parseInt(uk_noshow(uncomma($('#right_total_pay_cost').text()))) > 0)
+            $('#prepaid_modal_point').show();
+        else alert("정액 / 선불권을 선택해 주세요");
+    }
+    function prepaid_point_fix(unit){
+        var tmp = parseInt(uk_noshow($('#prepaid_point_text').val()));
+
+        if(unit == 'percent'){
+            var total = parseInt(uk_noshow(uncomma($('#right_total_pay_cost').text())));
+            var point_cost = ((tmp / 100) * total);
+            $('#prepaid_point_cost_text').text(comma(point_cost));
+        }
+        else if (unit == 'cancel') {
+            $('#prepaid_point_cost_text').text('0');
+            $('#prepaid_point_text').val('0');
+        }
+        else if(unit == 'money') $('#prepaid_point_cost_text').text(comma(tmp));
+
+        $(document).trigger('mouseup');
+    }
+
+    /* 포인트 오버 제한 */
+    $('.point-btns').click(function(){
+        maxValueCheck(this, 0);
+    });
+
+    function maxValueCheck(obj, flag){
+        var this_value;
+
+        if(flag < 1) this_value = parseInt(uk_noshow($('#prepayment_point_text').val() + $(obj).find('p').text()));
+        else this_value = parseInt(uk_noshow($(obj).val()));
+
+        $('#prepayment_point_text').val(client_point);
+    }
+</script>--%>
+
+<%-- 직원 2명 금액 나누기 --%>
+<%--<script>
+    $('#prepaid_employee_one_cost, #prepaid_employee_two_cost').keyup(function(){
+        if(Number($(this).val()) > Number($('#payment_cost').val())) $(this).val($('#payment_cost').val());
+        if(empl2_flag){
+            var empl1_val, empl2_val;
+            if($(this).attr('id') == 'prepaid_employee_one_cost'){
+                empl1_val = uk_noshow($(this).val());
+                if(empl1_val.indexOf('0') == 0) empl1_val = empl1_val.substring(1, empl1_val.length);
+                empl2_val = Number($('#payment_cost').val() - empl1_val);
+            }
+            else{
+                empl2_val = uk_noshow($(this).val());
+                if(empl2_val.indexOf('0') == 0) empl2_val = empl2_val.substring(1, empl2_val.length);
+                empl1_val = Number($('#payment_cost').val() - empl2_val);
+            }
+            $('#prepaid_employee_one_cost').val(empl1_val);
+            $('#prepaid_employee_two_cost').val(empl2_val);
+        }
+    });
+    $('#prepaid_employee_one_cost, #prepaid_employee_two_cost').focusout(function(){
+        if(uk($(this).val()) == "") $(this).val('0');
+    });
+</script>--%>
+
+<%-- 계산기 모달 동작 --%>
+<script>
+ /*   // 입력
+    $(document).on('click', '.pay-btns', function(){
+        var check = $(this).find('p').text();
+
+        if($(this).find('p').find('i').hasClass('fas')){
+            var tmp = $(this).closest('div').find('input').val();
+            tmp = tmp.substring(0, tmp.length-1);
+            $(this).closest('div').find('input').val(tmp);
+        }
+        if(check == '천원'){
+            $(this).closest('div').find('input').val('1000');
+        }
+        else if(check == '만원'){
+            $(this).closest('div').find('input').val('10000');
+        }
+        else if(check == '십만원'){
+            $(this).closest('div').find('input').val('100000');
+        }
+        else{
+            var tmp = $(this).closest('div').find('input').val();
+            if(tmp == 0)
+                $(this).closest('div').find('input').val(check);
+            else
+                $(this).closest('div').find('input').val(tmp + check);
+        }
+        missCostCheck();
+    });
+
+
+    // 현금 저장
+    $(document).on('click', '.pay-cost-submit', function(){
+        var tmp = $(this).closest('div').find('input').val();
+        //console.log("tmp : "+ tmp);
+        $(this).closest('tr[name=contens]').find('p[name=pay-cost]').text(comma(uk_noshow(tmp)));
+        if (missCostCheck()) {
+            $(this).closest('tr[name=contens]').find('p[name=pay-cost]').text('0');
+            alert('합계금액을 초과하였습니다');
+            return false;
+        } else {
+            $(".modal-content-close").trigger('click');
+        }
+    });
+    // 카드 저장
+    $(document).on('click', '.card-cost-submit', function(){
+        var tmp = $(this).closest('div').find('input').val();
+        $(this).closest('tr[name=contens]').find('p[name=card-cost]').text(comma(uk_noshow(tmp)));
+        if (missCostCheck()) {
+            $(this).closest('tr[name=contens]').find('p[name=card-cost]').text('0');
+            alert('합계금액을 초과하였습니다');
+            return false;
+        } else {
+            $(".modal-content-close").trigger('click');
+        }
+    });
+    // 상품권 저장
+    $(document).on('click', '.gift-cost-submit', function(){
+        var tmp = $(this).closest('div').find('input').val();
+        $(this).closest('tr[name=contens]').find('p[name=gift-cost]').text(comma(uk_noshow(tmp)));
+        if (missCostCheck()) {
+            $(this).closest('tr[name=contens]').find('p[name=gift-cost]').text('0');
+            alert('합계금액을 초과하였습니다');
+            return false;
+        } else {
+            $(".modal-content-close").trigger('click');
+        }
+    });
+    // 기타 저장
+    $(document).on('click', '.other-cost-submit', function(){
+        var tmp = $(this).closest('div').find('input').val();
+        $(this).closest('tr[name=contens]').find('p[name=other-cost]').text(comma(uk_noshow(tmp)));
+        if (missCostCheck()) {
+            $(this).closest('tr[name=contens]').find('p[name=other-cost]').text('0');
+            alert('합계금액을 초과하였습니다');
+            return false;
+        } else {
+            $(document).trigger('mouseup');
+        }
+    });
+    // 포인트 저장
+    $(document).on('click', '.point-cost-submit', function(){
+        if(!pointCheck()){
+            alert("소지하신 포인트를 초과하였습니다.");
+            return false;
+        }
+        var tmp = $(this).closest('div').find('input').val();
+        $(this).closest('tr[name=contens]').find('p[name=point-cost]').text(comma(uk_noshow(tmp)));
+        if (missCostCheck()) {
+            $(this).closest('tr[name=contens]').find('p[name=point-cost]').text('0');
+            alert('합계금액을 초과하였습니다');
+            return false;
+        } else {
+            $(document).trigger('mouseup');
+        }
+    });
+
+    function pointCheck(){
+        var this_value = parseInt($('#prepayment_point_text').val());
+
+        if(client_point < this_value){
+            return false;
+        } else{
+            return true;
+        }
+    }*/
+</script>
+<script>
+    // 모달 닫기
+    $(".modal-content-close").click(function () {
+        $(".sale-btn-content").hide();
+        $(".pay-btn-content").hide();
+        $(".card-btn-content").hide();
+        $(".gift-btn-content").hide();
+        $(".other-btn-content").hide();
+        $(".point-btn-content").hide();
+    });
+    // 모달 오픈
+    $(".sale-btn").click(function () {
+        $(".sale-btn-content").show();
+    });
+    $(".money-btn").click(function () {
+        choiceButtonClick('#prepayment_pay_text', this);
+        $(".pay-btn-content").show();
+    });
+    $(".card-btn").click(function () {
+        choiceButtonClick('#prepayment_card_text', this);
+        $(".card-btn-content").show();
+    });
+    $(".gift-btn").click(function () {
+        choiceButtonClick('#prepayment_gift_text', this);
+        $(".gift-btn-content").show();
+    });
+    $(".other-btn").click(function () {
+        choiceButtonClick('#prepayment_other_text', this);
+        $(".other-btn-content").show();
+    });
+    $(".point-btn").click(function () {
+        $('#point_print_tag').text(comma('${rMap.client_point}'));
+        choiceButtonClick('#prepayment_point_text', this);
+        $(".point-btn-content").show();
+    });
+</script>
+
+<script>
+    $(document).mouseup(function (e) {
+        var container = $('.sale-btn-content');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });
+    $(document).mouseup(function (e) {
+        var container = $('.pay-btn-content');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });
+    $(document).mouseup(function (e) {
+        var container = $('.card-btn-content');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });
+    $(document).mouseup(function (e) {
+        var container = $('.gift-btn-content');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });
+    $(document).mouseup(function (e) {
+        var container = $('.other-btn-content');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });
+    $(document).mouseup(function (e) {
+        var container = $('#prepaid_modal_point');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });
+    /*$(document).mouseup(function (e) {
+        var container = $('.point-btn-content');
+        if (container.has(e.target).length === 0)
+            container.hide();
+    });*/
+</script>
+
+<%--합치기 on / off--%>
+<script>
+    $("#merge-chk1").click(function () {
+        if ($(this).is(":checked")) {
+            $("#chk-div1").show();
+        } else {
+            $("#chk-div1").hide();
+        }
+    });
+</script>
+
+
+<script>
+<%-- 직원 추가 --%>
+/*function plusEmployee(){
+    empl2_flag = true;
+    var payment_cost = uk_noshow($('#payment_cost').val());
+    var cost1 = payment_cost / 2;
+    var cost2 = payment_cost / 2;
+
+    $('#employeePlus').hide();
+    $('#prepayment_pay_empl_list_box2').closest('div').find('.nice-select').show();
+    $('#employeeMinus').show();
+    $('#prepaid_div2').show();
+
+    $('#prepaid_employee_one_cost').val(cost1);
+    $('#prepaid_employee_two_cost').val(cost2);
+    $('#prepaid_employee_two_cost').show();
+}
+<%-- 직원 hide --%>
+function minusEmployee(){
+    empl2_flag = false;
+    var payment_cost = parseInt(uk_noshow($('#payment_cost').val()));
+
+    $('#employeePlus').show();
+    $('#prepayment_pay_empl_list_box2').closest('div').find('.nice-select').hide();
+    $('#employeeMinus').hide();
+    $('#prepaid_div2').hide();
+
+
+    $('#prepaid_employee_one_cost').val(payment_cost);
+    $('#prepaid_employee_two_cost').val('0');
+    $('#prepaid_employee_two_cost').hide();
+}*/
+</script>
+
+<%-- 결제 --%>
+<script>
+    /*function prepayment_sale(){
+        var tmp = '';
+        var prepaid_sum_flag = $('#merge-chk1').is(':checked');
+
+        /!* client update *!/
+        var append_point = parseInt(uk_noshow(uncomma($('#prepaid_point_cost_text').text())));
+
+        /!* sales col *!/
+        var validity;
+        var client_idx = client_idx;
+        var memo = $('#prepaid_memo').val();              // 태그 없음
+        var col_total_cost = uncomma($('#right_total_pay_cost').text());
+        var total_money = uncomma($('#right_total_pay_cost').text());
+        var total_card = uncomma($('#card-cost').text());
+        var total_exhaust = '0';
+        var total_miss_cost = uncomma($('#miss_cost_text').text());
+        var total_gift_cost = uncomma($('#gift-cost').text());
+        var total_other_cost = uncomma($('#other-cost').text());
+        var store_point = '0';
+        var col_status = '0';
+        var col_type = '1';
+        var use_point = uncomma($('#point-cost').text());
+        /!* /. sales col *!/
+
+        /!* sum object *!/
+        var sum_hss_prepaid_idx = '';
+        var sum_hss_prepaid_cost = '';
+        var sum_hss_prepaid_name = '';
+        var sum_hss_prepaid_sales_idx = '';
+        var sum_hss_prepaid_validity = '';
+        /!* /.sum object *!/
+
+        /!* json object *!/
+        var total_cost = parseInt(uk_noshow($('#payment_cost').val()));
+        var dc;
+        var dc_type;
+        var count;
+        var services_type;
+        var sales_fee;
+        var status;
+        var services_idx;
+        var services_cost;
+        var services_name;
+        var services_cash;
+        var accumulate;
+        var validity_date;
+        var empl1_idx;
+        var empl1_cost;
+        var empl1_name;
+        var empl1_point;
+        var empl1_exhaust;
+        var empl2_idx;
+        var empl2_cost;
+        var empl2_name;
+        var empl2_point;
+        var empl2_exhaust;
+        /!* /.json object *!/
+
+        dc = uncomma($('#sales-cost').text());
+
+        if($('#sale_type').text() == '%'){
+            dc_type = '1';
+            sales_fee = total_cost - ((dc / 100) * total_cost) + '';
+        } else{
+            dc_type = '0';
+            sales_fee = total_cost - dc + '';
+        }
+        count = '1';
+        services_type = '1';
+        status = '0';
+        services_idx = uk($('#idx_tmp').val());
+        services_cost = uk($('#payment_cost').val());
+        services_name = $('#tmp_name').text();
+        services_cash = parseInt(uncomma($('#pay-cost').text())) + parseInt(uncomma($('#card-cost').text()));
+        services_cash = services_cash.toString();
+        accumulate = uk($('#payment_acc_cost').val());
+        validity_date = uk_noshow($('#payment_validity').val());
+
+        empl1_idx = $('#prepayment_pay_empl_list_box1 option:selected').val();
+        empl1_name = $('#prepayment_pay_empl_list_box1 option:selected').text();
+        empl1_cost = $('#prepaid_employee_one_cost').val();
+        empl1_point = '0';
+        empl1_exhaust = '0';
+
+        if(empl2_flag){
+            if(uk($('#prepayment_pay_empl_list_box2 option:selected').val()) == ""){
+                alert("두 번째 직원을 선택해 주세요");
+                $('#prepayment_pay_empl_list_box2').focus();
+                return false;
+            }
+            else{
+                empl2_idx = $('#prepayment_pay_empl_list_box2 option:selected').val();
+                empl2_name = $('#prepayment_pay_empl_list_box2 option:selected').text();
+                empl2_cost = $('#prepaid_employee_two_cost').val();
+                empl2_point = '0';
+                empl2_exhaust = '0';
+            }
+        }
+
+        if(validity_date == "0"){
+            alert("유효기간을 입력해 주세요.");
+            $('#payment_validity').focus();
+            return false;
+        }
+
+        var date = new Date();
+        var year = date.getFullYear();
+        var month = date.getMonth()+1;
+        var day = date.getDate();
+
+        if(Number(month) + Number(validity_date) > 12){
+            year = Math.floor(year + ((Number(month) + Number(validity_date)) / 12));
+            month = Math.floor(Number(month) + Number(validity_date) % 12);
+        } else{
+            month = Number(month) + Number(validity_date);
+        }
+        if(Number(month) < 10){
+            month = "0" + month;
+        }
+        validity = year + "-" + month + "-" + day;
+
+        tmp = {
+            dc : dc,
+            dc_type : dc_type,
+            count : count,
+            services_type : services_type,
+            sales_fee : sales_fee,
+            status : status,
+            services_idx : services_idx,
+            services_cost : services_cost,
+            services_name : services_name,
+            services_cash : services_cash,
+            accumulate : accumulate,
+            validity : validity,
+            empl1_idx : empl1_idx,
+            empl1_name : empl1_name,
+            empl1_cost : empl1_cost,
+            empl1_point : empl1_point,
+            empl1_exhaust :empl1_exhaust,
+            empl2_idx : empl2_idx,
+            empl2_name : empl2_name,
+            empl2_cost : empl2_cost,
+            empl2_point : empl2_point,
+            empl2_exhaust : empl2_exhaust
+        };
+
+        if(empl1_idx == ''){
+            alert("직원을 선택해 주세요");
+            return false;
+        }
+        if(services_idx == ''){
+            alert('회원권을 선택해 주세요');
+            return false;
+        }
+        if(parseInt(total_miss_cost) > 0){
+            var con_test = confirm("미수금이 발생합니다. 계속 하시겠습니까?");
+            if (con_test == false) {
+                return false;
+            }
+        }
+        if(prepaid_sum_flag){
+            sum_hss_prepaid_idx = $("#sum_hss_prepaid_idx").val();
+            sum_hss_prepaid_cost = $("#sum_hss_prepaid_cost").val();
+            sum_hss_prepaid_name = $("#sum_hss_prepaid_name").val();
+            sum_hss_prepaid_sales_idx = $("#sum_hss_prepaid_sales_idx").val();
+            sum_hss_prepaid_validity = $("#sum_hss_prepaid_validity").val();
+
+            if(sum_hss_prepaid_idx == "" || sum_hss_prepaid_cost == "" || sum_hss_prepaid_name == "" || sum_hss_prepaid_sales_idx == "" || sum_hss_prepaid_validity == "") {
+                alert("합칠 선불권을 선택해 주세요.");
+                return false;
+            }
+        }
+        if (empl2_idx == '') {
+            delete tmp.empl2_idx;
+            delete tmp.empl2_name;
+            delete tmp.empl2_point;
+            delete tmp.empl2_exhaust;
+        }
+
+        var list = [];
+        list.push(tmp);
+        var data = JSON.stringify(list);
+
+        + "-" + Number(date.getMonth() + 1) + "-" + date.getDate();
+        var membership_date = date.getFullYear() + "-";
+        if(Number(date.getMonth() + 1) < 10) membership_date += "0" + Number(date.getMonth() + 1);
+        else membership_date += Number(date.getMonth() + 1);
+        membership_date += "-" + date.getDate();
+
+
+        $.ajax({
+            url: "/Sales/prepaidSalesInsert.do",
+            type: "post",
+            dataType: "json",
+            data: {
+                "resource": data,
+                "memo": memo,
+                "total_cost": sales_fee,
+                "total_money": total_money,
+                "total_card": total_card,
+                "total_exhaust": total_exhaust,
+                "total_miss_cost": total_miss_cost,
+                "total_gift_cost": total_gift_cost,
+                "total_other_cost": total_other_cost,
+                "store_point": store_point,
+                "col_status": col_status,
+                "col_type": col_type,
+                "client_idx" : client_idx,
+                "validity" : validity,
+                "services_idx" : services_idx,
+                "accumulate" : accumulate,
+                "services_name" : services_name,
+                "prepaid_sum_flag" : prepaid_sum_flag,
+                "sum_hss_prepaid_idx" : sum_hss_prepaid_idx,
+                "sum_hss_prepaid_cost" : sum_hss_prepaid_cost,
+                "sum_hss_prepaid_name" : sum_hss_prepaid_name,
+                "sum_hss_prepaid_sales_idx" : sum_hss_prepaid_sales_idx,
+                "sum_hss_prepaid_validity" : sum_hss_prepaid_validity,
+                "membership_flag" : membership_flag,
+                "now_date" : membership_date,
+                "append_point" : append_point,
+                "use_point" : use_point
+            },
+            success: function (data) {
+                if (data.code == 200) {
+                    //console.log(data);
+                    alert("선불권 결제가 완료되었습니다.");
+                    location.href = document.URL;
+                } else {
+                    alert("잠시 후 다시 시도해 주세요");
+                    return false;
+                }
+            },
+            error: function () {
+                alert("에러가 발생했습니다.");
+                location.href = document.URL;
+            }
+        });
+    }*/
+</script>

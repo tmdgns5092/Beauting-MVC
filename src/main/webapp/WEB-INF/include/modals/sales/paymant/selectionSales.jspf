@@ -1,0 +1,105 @@
+<%@ page pageEncoding="utf-8" %>
+<%-- 할인율 선택 모달 --%>
+<div class="modal fade" id="sales-sale" tabindex="-1" role="dialog" aria-labelledby="sales-sale"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="sales-sale-modal">
+            <div class="modal-header" style="text-align: right">
+                <div class="close-btn" data-dismiss="modal">
+                    <img src="/static/test-img/close-btn.png" alt="X버튼 이미지">
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="sales-sale-modal-form">
+                    <input type="text" id="dc_input">
+                    <button onclick="dc_won()">금액</button>
+                    <button onclick="dc_percent()">%</button>
+                    <p>할인율 선택</p>
+                    <table class="sales-sale-modal-table">
+                        <tr>
+                            <td width="25%">
+                                <button class="dc_obj" value="5">5%</button>
+                            </td>
+                            <td width="25%">
+                                <button class="dc_obj" value="10">10%</button>
+                            </td>
+                            <td width="25%">
+                                <button class="dc_obj" value="15">15%</button>
+                            </td>
+                            <td width="25%">
+                                <button class="dc_obj" value="20">20%</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button class="dc_obj" value="25">25%</button>
+                            </td>
+                            <td>
+                                <button class="dc_obj" value="30">30%</button>
+                            </td>
+                            <td>
+                                <button class="dc_obj" value="35">35%</button>
+                            </td>
+                            <td>
+                                <button class="dc_obj" value="40">40%</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button class="dc_obj" value="50">50%</button>
+                            </td>
+                            <td>
+                                <button class="dc_obj" value="60">60%</button>
+                            </td>
+                            <td>
+                                <button class="dc_obj" value="70">70%</button>
+                            </td>
+                            <td>
+                                <button class="dc_obj" value="100">100%</button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%--
+&lt;%&ndash; 할인율 입력 &ndash;%&gt;
+<script>
+    $('.dc_obj').click(function(){
+        var this_val = $(this).val();
+        $('#dc_input').val(this_val);
+    });
+</script>
+
+&lt;%&ndash; 활인율 작성 완료 &ndash;%&gt;
+<script>
+    function dc_won(){
+        var val = $('#dc_input').val();
+
+        /*$("#sales_dc").text(val + "원");
+        $('#dc_input').attr("data-value", val);*/
+
+        $(dc_obj_tmp).text(comma(val) + "원");
+        $(dc_obj_tmp).attr("data-value", val);
+        $(dc_obj_tmp).closest("tr").find("input[name=dc_value_box]").val(val).trigger("change");
+
+        var container = $(".sales-btn-text, .sales-btn-price, .sales-btn-employee, .sales-btn-balance");
+        container.css("display","none");
+    }
+    function dc_percent(){
+        var val = $('#dc_input').val();
+
+        /*$("#sales_dc").text(val + "%");
+        $('#dc_input').attr("data-value", val);*/
+
+        $(dc_obj_tmp).text(val + "%");
+        $(dc_obj_tmp).attr("data-value", val);
+        $(dc_obj_tmp).closest("tr").find("input[name=dc_value_box]").trigger("change");
+
+        var container = $(".sales-btn-text, .sales-btn-price, .sales-btn-employee, .sales-btn-balance");
+        container.css("display","none");
+    }
+</script>--%>

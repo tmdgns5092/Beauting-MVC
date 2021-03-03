@@ -1,0 +1,154 @@
+<%@ page pageEncoding="utf-8" %>
+<link rel="stylesheet" type="text/css" href="/dist/css/fullcalender/fullcalendar.css"/>
+<script type="text/javascript" src="/dist/js/fullcalender/jquery.js"></script>
+<script type="text/javascript" src="/dist/js/fullcalender/jquery-ui-custom.js"></script>
+<script type="text/javascript" src="/dist/js/fullcalender/fullcalendar.min.js"></script>
+<script type='text/javascript'>
+
+    $(document).ready(function() {
+
+
+        /* initialize the external events
+        -----------------------------------------------------------------*/
+
+        $('#external-events div.external-event').each(function() {
+
+            // create an Event Object (http://arshaw.com/fullcalendar/docs/event_data/Event_Object/)
+            // it doesn't need to have a start or end
+            var eventObject = {
+                title: $.trim($(this).text()) // use the element's text as the event title
+            };
+
+            // store the Event Object in the DOM element so we can get to it later
+            $(this).data('eventObject', eventObject);
+
+            // make the event draggable using jQuery UI
+            $(this).draggable({
+                zIndex: 999,
+                revert: true,      // will cause the event to go back to its
+                revertDuration: 0  //  original position after the drag
+                /*,
+                droppable:function(event, ui){
+                    console.log("dropped ... ");
+                }*/
+            });
+        });
+
+
+        /* initialize the calendar
+        -----------------------------------------------------------------*/
+
+        $('#calendar').fullCalendar({
+            header: {
+                left: "",
+                center: "title",
+                //    right: "month,basicWeek,basicDay"
+                right: "today prev,next"
+            },
+            editable: true,
+            titleFormat: {
+                month: "yyyy년 MMMM",
+                week: "[yyyy] MMM dd일{ [yyyy] MMM dd일}",
+                day: "yyyy년 MMM d일 dddd"
+            },
+            allDayDefault: false,
+            defaultView: "month",
+            editable: false,
+            monthNames: ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"],
+            monthNamesShort: ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"],
+            dayNames: ["일요일","월요일","화요일","수요일","목요일","금요일","토요일"],
+            dayNamesShort: ["일","월","화","수","목","금","토"],
+            buttonText: {
+                today : "오늘",
+                month : "월별",
+                week : "주별",
+                day : "일별",
+            },
+            timeFormat : "HH:mm",
+            editable: true,
+            droppable: true, // this allows things to be dropped onto the calendar !!!
+            drop: function(date, allDay) { // this function is called when something is dropped
+                console.log("test ... ");
+                console.log("date : " + date);
+                console.log("allDay : " + allDay);
+                // retrieve the dropped element's stored Event Object
+                var originalEventObject = $(this).data('eventObject');
+
+                console.log("originalEventObject : " + $(this).html());
+
+                // we need to copy it, so that multiple events don't have a reference to the same object
+                var copiedEventObject = $.extend({}, originalEventObject);
+
+                // assign it the date that was reported
+                copiedEventObject.start = date;
+                copiedEventObject.allDay = allDay;
+
+                // render the event on the calendar
+                // the last `true` argument determines if the event "sticks" (http://arshaw.com/fullcalendar/docs/event_rendering/renderEvent/)
+                $('#calendar').fullCalendar('renderEvent', copiedEventObject, true);
+
+            }
+        });
+    });
+
+</script>
+<style type='text/css'>
+
+    body {
+        margin-top: 40px;
+        text-align: center;
+        font-size: 14px;
+        font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+    }
+
+    #wrap {
+        width: 1100px;
+        margin: 0 auto;
+    }
+
+    #external-events {
+        float: left;
+        width: 150px;
+        padding: 0 10px;
+        border: 1px solid #ccc;
+        background: #eee;
+        text-align: left;
+    }
+
+    #external-events h4 {
+        font-size: 16px;
+        margin-top: 0;
+        padding-top: 1em;
+    }
+
+    .external-event { /* try to mimick the look of a real event */
+        margin: 10px 0;
+        padding: 2px 4px;
+        background: #3366CC;
+        color: #fff;
+        font-size: .85em;
+        cursor: pointer;
+    }
+
+    #external-events p {
+        margin: 1.5em 0;
+        font-size: 11px;
+        color: #666;
+    }
+
+    #external-events p input {
+        margin: 0;
+        vertical-align: middle;
+    }
+
+    #calendar {
+        float: right;
+        width: 900px;
+        -ms-user-select: none;
+        -moz-user-select: -moz-none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+</style>

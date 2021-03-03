@@ -1,0 +1,44 @@
+<%@ page pageEncoding="utf-8" %>
+<div class="modal fade" id="pay-method-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="dc-modal modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-body">
+                <button class="close-btn02" data-dismiss="modal"><i class="fas fa-times"></i></button>
+                <h4 class="modal-title" id="pay-title"></h4>
+                <input type="text" onkeydown="onlyNumber(this)" oninput="maxValueCheck(this)" id="pay-modal-text"/>
+                <table id="pay-modal-table">
+                    <tr>
+                        <td width="33.333%">7</td>
+                        <td width="33.333%">8</td>
+                        <td width="33.333%">9</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>6</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td>0</td>
+                        <td>00</td>
+                        <td>000</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <%--아이콘으로 수정됨--%>
+                        <td><i class="fas fa-long-arrow-alt-left"></i></td>
+                        <td></td>
+                    </tr>
+                </table>
+                <div class="content02-save">
+                    <button type="button" onclick="payCostSubmit()">적용</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

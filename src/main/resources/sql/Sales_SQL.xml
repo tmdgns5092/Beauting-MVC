@@ -1,0 +1,972 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="sales">
+    <!-- 예약 타입 불러오기 -->
+    <select id="selectResType" parameterType="hashmap" resultType="Integer">
+        SELECT A.type
+		FROM (
+			SELECT idx
+    		FROM ${shopId}_reservation
+    		WHERE idx = #{payment}
+		) B
+		JOIN ${shopId}_reservation A
+		ON B.idx = A.idx
+    </select>
+    <!-- 예약 결제 정보 불러오기 (회원) -->
+    <select id="selectCallReservationPayInfo1" parameterType="hashmap" resultType="hashmap">
+        SELECT
+            C.name AS client_name, C.rank AS client_rank, C.phone AS client_phone, C.memo AS memo, C.point AS client_point, FORMAT(CAST(sum_array_cells(json_extract(C.prepaid, '$[*].cost')) AS UNSIGNED), 0) AS client_prepaid_point, C.miss_cost AS client_miss_cost, C.idx AS client_idx, C.prepaid AS prepaid_map, C.ticket AS ticket_map,  C.first_membership, C.status_membership,
+            DATE_FORMAT(A.date, '%Y-%m-%d') AS res_date, DATE_FORMAT(A.date, '%H:%i') AS res_time, B.name AS empl_name, B.idx AS empl_idx, D.type, D.category,
+            D.name AS service_name, D.cost AS service_cost, 1 AS service_count, D.idx AS service_idx,
+            #{payment} AS res_idx
+        FROM ${shopId}_reservation A
+        INNER JOIN employee B
+        ON A.employee_idx = B.idx
+        INNER JOIN ${shopId}_client C
+        ON A.client_idx = C.idx
+        INNER JOIN services D
+        ON A.services_idx = D.idx
+        WHERE A.idx = #{payment}
+	</select>
+    <!-- 예약 결제 정보 불러오기 (미등록 회원) -->
+    <select id="selectCallReservationPayInfo2" parameterType="hashmap" resultType="hashmap">
+        SELECT
+            A.un_name AS client_name, "" AS client_rank, "" AS client_phone, "" AS memo, 0 AS client_point, 0 AS client_prepaid_point, 0 AS client_miss_cost, 0 AS client_idx, 0 AS prepaid_map, 0 ticket_map,
+            DATE_FORMAT(A.date, '%Y-%m-%d') AS res_date, DATE_FORMAT(A.date, '%H:%i') AS res_time, B.name AS empl_name, B.idx AS empl_idx, D.type, D.category,
+            D.name AS service_name, D.cost AS service_cost, 1 AS service_count, D.idx AS service_idx,
+            #{payment} AS res_idx
+        FROM ${shopId}_reservation A
+        INNER JOIN employee B
+        ON A.employee_idx = B.idx
+        INNER JOIN services D
+        ON A.services_idx = D.idx
+        WHERE A.idx = #{payment}
+	</select>
+    <!-- 미예약 판매 페이지 고객정보 불러오기 -->
+    <select id="selectClientInfoFromIdx" parameterType="hashmap" resultType="hashmap">
+        SELECT
+            C.name AS client_name,
+            C.rank AS client_rank,
+            C.phone AS client_phone,
+            C.point AS client_point,
+            FORMAT(CAST(sum_array_cells(json_extract(prepaid, '$[*].cost')) AS UNSIGNED), 0) AS client_prepaid_point,
+            FORMAT(CAST(sum_array_cells(json_extract(ticket, '$[*].count')) AS UNSIGNED), 0) AS client_ticket_point,
+            C.miss_cost AS client_miss_cost,
+            C.idx AS client_idx,
+            C.prepaid AS prepaid_map,
+            C.ticket AS ticket_map,
+            C.first_membership,
+            C.status_membership,
+            C.memo,
+            C.visit_count
+        FROM ${shopId}_client C
+        WHERE C.idx = #{client_idx}
+	</select>
+    <!-- 판매 직원 불러오기 -->
+    <select id="selectEmployeeListCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.*
+        FROM (
+            SELECT idx
+            FROM employee
+            WHERE shop_idx = #{shopId}
+        ) B
+        JOIN employee A
+        ON B.idx = A.idx
+    </select>
+    <!-- 판매 직원 불러오기 Ver2 -->
+    <select id="selectSaleEmployeeListCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.code, A.name, A.start_date, A.memo, A.shop_idx, A.status, A.rank, A.tel
+        FROM (
+            SELECT idx
+            FROM employee
+            WHERE shop_idx = #{shopId}
+        ) B
+        JOIN employee A
+        ON B.idx = A.idx
+    </select>
+    <!-- 서비스 카테고리 불러오기 -->
+    <select id="selectServiceCategoryCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category
+        FROM (
+            SELECT idx
+            FROM services
+            WHERE shop_idx = #{idx} AND type = 0 AND name is null AND useYN = 1
+        ) B
+        JOIN services A
+        ON B.idx = A.idx
+    </select>
+    <select id="selectServiceCategoryIdxCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category
+        FROM (
+            SELECT idx
+            FROM services
+            WHERE shop_idx = #{shopIdx} AND type = 0 AND name is null AND category = #{category_name} AND useYN = 1
+        ) B
+        JOIN services A
+        ON B.idx = A.idx
+    </select>
+    <!-- 서비스 디테일 불러오기 -->
+    <select id="selectServiceDetailCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category, A.name, A.cost
+        FROM (
+            SELECT idx
+            FROM services
+            WHERE shop_idx = #{idx} AND type = 0 AND name is not null AND useYN = 1
+        ) B
+        JOIN services A
+        ON B.idx = A.idx
+    </select>
+    <!-- 제품 모두 불러오기 -->
+    <select id="salectAllProductCateCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category, A.name, A.cost
+        FROM (
+            SELECT idx
+            FROM services
+            WHERE shop_idx = #{idx} AND type = 3 AND name is null AND useYN = 1
+        ) B
+        JOIN services A
+        ON B.idx = A.idx
+    </select>
+    <select id="salectAllProductDetailCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category, A.name, A.cost
+        FROM (
+            SELECT idx
+            FROM services
+            WHERE shop_idx = #{idx} AND type = 3 AND name is not null AND useYN = 1
+        ) B
+        JOIN services A
+        ON B.idx = A.idx
+    </select>
+    <!-- 분류 세부 제품 가져오기 -->
+    <select id="salectCateSortProductDetailCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category, A.name, A.cost
+        FROM (
+        SELECT idx
+        FROM services
+        WHERE shop_idx = #{idx} AND type = 3 AND name is not null AND useYN = 1
+            <if test="cate_name.equals('0')">AND category = #{cate_name}</if>
+        ) B
+        JOIN services A
+        ON B.idx = A.idx
+    </select>
+    <!-- 제품 검색 -->
+    <select id="salectProductSreach" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category, A.name, A.cost
+        FROM (
+            SELECT idx
+            FROM services
+            WHERE shop_idx = #{idx}
+            AND type = 3
+            AND name is not null
+            <if test="cate.equals('0')">AND category = #{cate}</if>
+            AND name like '%${text}%'
+            AND useYN = 1
+        ) B
+        JOIN services A
+        ON B.idx = A.idx
+    </select>
+    <!-- (카테고리) 정액 선불권 모두 불러오기 -->
+    <select id="salectAllCatePrepaymentListCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category, A.name, A.cost
+        FROM (
+            SELECT idx
+            FROM services
+            WHERE shop_idx = #{idx}
+            AND type = 1
+            AND name is null
+            AND useYN = 1
+        ) B
+        JOIN services A
+        ON B.idx = A.idx
+    </select>
+    <!-- (디테일) 정액 선불권 모두 불러오기 -->
+    <select id="salectAllDetailPrepaymentListCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category, A.name, A.cost, CAST(A.resource ->> "$.acc_cost" AS UNSIGNED) AS acc_cost, CAST(A.resource ->> "$.validity" AS UNSIGNED) AS validity
+        FROM (
+        SELECT idx
+        FROM services
+        WHERE shop_idx = #{idx}
+        AND type = 1
+        AND name is not null
+        AND useYN = 1
+        ) B
+        JOIN services A
+        ON B.idx = A.idx
+    </select>
+
+    <!-- (카테고리) 티켓 모두 불러오기 -->
+    <select id="salectAllCateTicketListCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category, A.name, A.cost
+        FROM (
+        SELECT idx
+        FROM services
+        WHERE shop_idx = #{idx}
+        AND type = 2
+        AND name is null
+        AND useYN = 1
+        ) B
+        JOIN services A
+        ON B.idx = A.idx
+    </select>
+    <!-- (디테일) 티켓 모두 불러오기 -->
+    <select id="salectAllDetailTicketListCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.category, A.name, A.cost, CAST(A.resource ->> "$.count" AS UNSIGNED) AS count, CAST(A.resource ->> "$.validity" AS UNSIGNED) AS validity
+        FROM (
+        SELECT idx
+        FROM services
+        WHERE shop_idx = #{idx}
+        AND type = 2
+        AND name is not null
+        AND useYN = 1
+        ) B
+        JOIN services A
+        ON B.idx = A.idx
+    </select>
+
+    <!-- 모든 클라이언트 불러오기 -->
+    <select id="selectClient" parameterType="hashmap" resultType="hashmap">
+        SELECT *, IFNULL(visit_count, 0) as visit_count_
+        FROM ${shop_id}_client
+        WHERE idx = #{client_idx}
+    </select>
+
+    <!-- 고객 보유 선불권 불러오기 -->
+    <select id="selectPrepaidOfClientCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.prepaid
+		FROM (
+			SELECT idx
+    		FROM ${id}_client
+    		WHERE idx = #{client_idx}
+		) B
+		JOIN ${id}_client A
+		ON B.idx = A.idx
+    </select>
+
+    <!-- 고객 보유 티켓 불러오기 -->
+    <select id="selectTicketOfClientCall" parameterType="hashmap" resultType="hashmap">
+        SELECT A.ticket
+		FROM (
+			SELECT idx
+    		FROM ${id}_client
+    		WHERE idx = #{client_idx}
+		) B
+		JOIN ${id}_client A
+		ON B.idx = A.idx
+    </select>
+
+    <!-- 선불권 판매 -->
+    <insert id="insertPrepaidSalesData" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+		INSERT INTO ${shop_id}_sales (
+		  memo,
+		  total_cost,
+		  total_money,
+		  total_card,
+		  total_exhaust,
+		  total_point,
+		  total_miss_cost,
+		  total_gift_cost,
+		  total_other_cost,
+		  sale_resource,
+		  store_point,
+		  status,
+		  shop_idx,
+		  client_idx,
+		  services_type,
+		  validity_date,
+		  accumulate
+		)
+		VALUES (
+		  #{memo},
+		  #{total_cost},
+		  #{total_money},
+		  #{total_card},
+		  #{total_exhaust},
+		  #{use_point},
+		  #{total_miss_cost},
+		  #{total_gift_cost},
+		  #{total_other_cost},
+		  #{resource},
+		  #{store_point},
+		  #{col_status},
+		  #{shopIdx},
+		  #{client_idx},
+		  1,
+		  #{validity},
+		  #{accumulate}
+		)
+	</insert>
+    <!-- 고객 회원권 합치기 -->
+    <update id="updateSumClientPrepaidJson" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET prepaid = '${pList}',
+        point = point - #{use_point} + #{append_point},
+        miss_cost = miss_cost + #{total_miss_cost},
+        last_visit_date = NOW()
+		<if test="membership_flag.equals('true')">
+            , first_membership = #{now_date}, status_membership = 1
+        </if>
+		WHERE idx = #{client_idx}
+    </update>
+    <!-- 고객 회원권 업데이트 -->
+    <update id="updateClientPrepaidJson" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+		UPDATE ${shop_id}_client
+		SET prepaid = JSON_ARRAY_APPEND(prepaid, '$', JSON_OBJECT('idx', '${services_idx}', 'cost', '${accumulate}', 'name', '${services_name}', 'validity', '${validity}', 'sale_idx', '${ID}')),
+        point = point - #{use_point} + #{append_point},
+        miss_cost = miss_cost + #{total_miss_cost},
+        last_visit_date = NOW()
+        <if test="membership_flag.equals('true')">
+            , first_membership = #{now_date}, status_membership = 1
+        </if>
+		WHERE idx = #{client_idx}
+    </update>
+
+    <!-- 횟수권 판매 -->
+    <insert id="insertTicketSalesData" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+		INSERT INTO ${shop_id}_sales (
+		  memo,
+		  total_cost,
+		  total_money,
+		  total_card,
+		  total_exhaust,
+		  total_point,
+		  total_miss_cost,
+		  total_gift_cost,
+		  total_other_cost,
+		  sale_resource,
+		  store_point,
+		  status,
+		  services_type,
+		  shop_idx,
+		  client_idx,
+		  validity_date,
+		  accumulate
+		)
+		VALUES (
+		  #{memo},
+		  #{total_cost},
+		  #{total_money},
+		  #{total_card},
+		  #{total_exhaust},
+		  #{use_point},
+		  #{total_miss_cost},
+		  #{total_gift_cost},
+		  #{total_other_cost},
+		  #{resource},
+		  #{store_point},
+		  #{col_status},
+		  2,
+		  #{shopIdx},
+		  #{client_idx},
+		  #{validity},
+		  #{accumulate}
+		)
+	</insert>
+    <!-- 고객 횟수권 sum update -->
+    <update id="updateSumClientTicketJson" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET ticket = '${pList}',
+        point = point - #{use_point} + #{append_point},
+        miss_cost = miss_cost + #{total_miss_cost},
+        last_visit_date = NOW(),
+        total_pay = total_pay + (${total_cost} - ${use_point})
+        <if test="membership_flag.equals('true')">
+            , first_membership = #{now_date}, status_membership = 1
+        </if>
+        WHERE idx = #{client_idx}
+    </update>
+    <!-- 고객 횟수권 update -->
+    <update id="updateClientTicketJson" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET ticket = JSON_ARRAY_APPEND(ticket, '$', JSON_OBJECT('idx', '${services_idx}', 'cost', '${controller_ticket_cost}', 'count', '${accumulate}', 'name', '${services_name}', 'validity', '${validity}', 'sale_idx', '${ID}')),
+        point = point - #{use_point} + #{append_point},
+        miss_cost = miss_cost + #{total_miss_cost},
+        last_visit_date = NOW(),
+        total_pay = total_pay + (${total_cost} - ${use_point})
+        <if test="membership_flag.equals('true')">
+            , first_membership = #{now_date}, status_membership = 1
+        </if>
+        WHERE idx = #{client_idx}
+    </update>
+
+    <!-- searchClient 페이징 카운트 -->
+    <select id="searchClientPagingCount" parameterType="hashmap" resultType="hashmap">
+        SELECT COUNT(b.idx) AS cnt
+        FROM (SELECT idx FROM ${id}_client) a
+        JOIN ${id}_client b
+        ON a.idx = b.idx
+        <choose>
+            <when test="type.equals('name_search')">WHERE name LIKE '%${data}%'</when>
+            <when test="type.equals('code_search')">WHERE code = '${data}'</when>
+            <when test="type.equals('phone_search')">WHERE phone LIKE '%${data}%'</when>
+            <when test="type.equals('all_search')">
+                WHERE
+                code = '${data}' OR
+                name LIKE '%${data}%' OR
+                phone LIKE '%${data}%'
+            </when>
+            <otherwise></otherwise>
+        </choose>
+    </select>
+    <!-- searchClient 페이징 컨텐츠 -->
+    <select id="searchClientPagingContent" parameterType="hashmap" resultType="hashmap">
+        SELECT b.idx, b.code, b.name, b.phone, FORMAT(CAST(sum_array_cells(json_extract(b.prepaid, '$[*].cost')) AS UNSIGNED), 0) AS prepaid, FORMAT(b.client_price, 0) AS client_price, FORMAT(NULLIF(b.noshow, 0), 0) AS noshow
+        FROM (
+        SELECT idx
+        FROM ${id}_client
+        ) a
+        JOIN ${id}_client b
+        ON a.idx = b.idx
+        <choose>
+            <when test="type.equals('name_search')">WHERE name LIKE '%${data}%'</when>
+            <when test="type.equals('code_search')">WHERE code = '${data}'</when>
+            <when test="type.equals('phone_search')">WHERE phone LIKE '%${data}%'</when>
+            <when test="type.equals('all_search')">
+                WHERE
+                code = '${data}' OR
+                name LIKE '%${data}%' OR
+                phone LIKE '%${data}%'
+            </when>
+            <otherwise></otherwise>
+        </choose>
+        LIMIT #{start_idx}, #{page_size}
+    </select>
+
+    <!-- 타입에 맞는 내역 갯수 가져오기 -->
+    <select id="selectCountServicesType" parameterType="hashmap" resultType="hashmap">
+        SELECT count(*) AS count
+        FROM ${id}_sales
+        WHERE client_idx = #{client_idx} AND
+        <choose><when test="column.equals('date')">DATE(date) LIKE #{data}</when><otherwise>${column} LIKE #{data}</otherwise></choose>
+        <choose><when test="type == -1">AND total_miss_cost != 0</when><otherwise>AND services_type = #{type}</otherwise></choose>
+    </select>
+
+    <!-- 타입에 맞는 내역 페이징 가져오기  -->
+    <select id="selectServicesTypeHistory" parameterType="hashmap" resultType="hashmap">
+        SELECT *, DATE_FORMAT(date,'%Y-%m-%d %H:%i:%s') AS forDate, DATE_FORMAT(validity_date,'%Y-%m-%d') AS validity,
+                  sum_array_cells(b.sale_resource->'$[*].sales_fee') as total_sales_fee
+        <choose>
+            <when test="type == 0 or type == 3">
+                , sum_array_cells(b.use_prepaid->'$[*].cost') as use_prepaid_cost
+                , sum_array_cells(b.use_ticket->'$[*].count') as use_ticket_count
+            </when>
+        </choose>
+        FROM (
+            SELECT idx
+            FROM ${id}_sales
+            WHERE client_idx = #{client_idx} AND
+            <choose><when test="column.equals('date')">DATE(date) LIKE #{data}</when><otherwise>${column} LIKE #{data}</otherwise></choose>
+            <choose><when test="type == -1">AND total_miss_cost != 0</when><otherwise>AND services_type = #{type}</otherwise></choose>
+        ) a
+        JOIN ${id}_sales b
+        ON b.idx = a.idx
+        ORDER BY b.date DESC
+        LIMIT #{start_idx}, #{end_idx}
+    </select>
+
+    <!-- 타입에 맞는 내역 갯수 가져오기 -->
+    <select id="selectSalesDateAjax" parameterType="hashmap" resultType="hashmap">
+        SELECT b.*, DATE_FORMAT(date, '%Y년 %m월 %d일') as sales_date, total_sales_fee, (total_sales_fee - b.total_miss_cost) as total_payment
+        FROM (
+          SELECT idx, sum_array_cells(sale_resource->'$[*].sales_fee') as total_sales_fee
+          FROM ${id}_sales
+          WHERE client_idx = #{client_idx} AND date = #{forDate} AND services_type = #{type}
+        ) a
+        JOIN ${id}_sales b
+        on a.idx = b.idx
+    </select>
+
+    <!-- 타입에 맞는 내역 갯수 가져오기 -->
+    <select id="selectSalesOneAjax" parameterType="hashmap" resultType="hashmap">
+        SELECT b.*, DATE_FORMAT(date, '%Y년 %m월 %d일') as sales_date, total_sales_fee, (total_sales_fee - b.total_miss_cost) as total_payment
+        FROM (
+          SELECT idx, sum_array_cells(sale_resource->'$[*].sales_fee') as total_sales_fee
+          FROM ${id}_sales
+          WHERE idx = #{idx}
+        ) a
+        JOIN ${id}_sales b
+        on a.idx = b.idx
+    </select>
+
+    <!-- 타입에 맞는 내역 페이징 가져오기  -->
+    <select id="selectServicesTypeHistory2" parameterType="hashmap" resultType="hashmap">
+        SELECT *, DATE_FORMAT(date,'%Y-%m-%d') AS forDate
+        FROM ${id}_sales
+        WHERE client_idx = #{client_idx} AND INSTR(sale_resource->"$[*].services_type", #{type}) != 0 AND sale_type = #{sale_type}
+        ORDER BY idx DESC
+        LIMIT #{start_idx}, #{end_idx}
+    </select>
+
+    <select id="saveSH">
+        SELECT *
+        FROM (
+        SELECT *
+        FROM ${shop_id}_sales
+        WHERE client_idx = #{client_idx}
+        ) A
+        JOIN (
+        SELECT *
+        FROM services
+        WHERE type = #{type} <if test="type2 != null"> OR type = #{type2}</if>
+        ) B
+        ON A.services_idx = B.idx
+    </select>
+
+    <select id="selectAllReservationHistory" parameterType="hashmap" resultType="hashmap">
+        SELECT COUNT(*) as count
+        FROM (
+            SELECT * FROM ${id}_reservation WHERE client_idx = #{client_idx} AND
+            <choose><when test="column.equals('date')">DATE(date) LIKE #{data}</when><otherwise>${column} LIKE #{data}</otherwise></choose>
+        ) a
+        JOIN ${id}_client b ON a.client_idx = b.idx
+        JOIN services c ON a.services_idx = c.idx
+        JOIN employee d ON a.employee_idx = d.idx
+    </select>
+
+    <select id="selectReservationHistory" parameterType="hashmap" resultType="hashmap">
+        SELECT date_format(date,'%Y-%m-%d') AS date, b.name AS cName, d.name AS eName, c.name AS sName,
+            a.status, a.work_time, ifnull(a.memo,'') AS memo
+        FROM (
+            SELECT * FROM ${id}_reservation WHERE client_idx = #{client_idx} AND
+             <choose><when test="column.equals('date')">DATE(date) LIKE #{data}</when><otherwise>${column} LIKE #{data}</otherwise></choose>
+        ) a
+        JOIN ${id}_client b ON a.client_idx = b.idx
+        JOIN services c ON a.services_idx = c.idx
+        JOIN employee d ON a.employee_idx = d.idx
+        ORDER BY a.idx DESC
+        LIMIT #{start_idx}, #{end_idx}
+    </select>
+
+    <!-- 일반판매 - 서비스 -->
+    <insert id="insertServieSales" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO ${shop_id}_sales (
+		  shop_idx,
+		  client_idx,
+		  memo,
+		  date,
+		  services_type,
+		  total_money,
+		  total_card,
+		  total_cost,
+		  total_exhaust,
+		  total_point,
+		  total_miss_cost,
+		  total_gift_cost,
+		  total_other_cost,
+		  store_point,
+		  status,
+		  sale_resource,
+		  use_ticket,
+		  use_prepaid,
+		  res_idx
+		)
+		VALUES (
+		  #{shop_idx},
+		  #{client_idx},
+		  #{memo},
+		  #{now},
+		  0,
+		  #{service_total_money},
+		  #{service_total_card},
+		  #{service_total_cost},
+		  #{service_total_exhaust},
+		  #{service_total_point},
+		  #{service_total_miss_cost},
+		  #{service_total_gift},
+		  #{service_total_other},
+		  #{store_point},
+		  0,
+		  #{service_sale_resource},
+		  #{service_use_ticket},
+		  #{service_use_prepaid},
+		  ${res_idx}
+		)
+    </insert>
+    <!-- 일반 판매 - 제품 -->
+    <insert id="insertProductSales" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO ${shop_id}_sales (
+		  shop_idx,
+		  client_idx,
+		  memo,
+		  date,
+		  services_type,
+		  total_money,
+		  total_card,
+		  total_cost,
+		  total_exhaust,
+		  total_point,
+		  total_miss_cost,
+		  total_gift_cost,
+		  total_other_cost,
+		  store_point,
+		  status,
+		  sale_resource,
+		  use_ticket,
+		  use_prepaid,
+		  res_idx
+		)
+		VALUES (
+		  #{shop_idx},
+		  #{client_idx},
+		  #{memo},
+		  #{now},
+		  3,
+		  #{product_total_money},
+		  #{product_total_card},
+		  #{product_total_cost},
+		  #{product_total_exhaust},
+		  #{product_total_point},
+		  #{product_total_miss_cost},
+		  #{product_total_gift},
+		  #{product_total_other},
+		  #{store_point},
+		  0,
+		  #{product_sale_resource},
+		  #{product_use_ticket},
+		  #{product_use_prepaid},
+		  ${res_idx}
+		)
+    </insert>
+    <!-- 고객 선불권 차감 -->
+    <update id="updateClientUsePrepaid" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET prepaid = '${prepaidUpdate}'
+        WHERE idx = #{client_idx}
+    </update>
+    <!-- 고객 횟수권 차감 -->
+    <update id="updateClientUseTicket" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET ticket = '${ticketUpdate}'
+        WHERE idx = #{client_idx}
+    </update>
+    <!-- 고객 총 결제금액 미수금 업데이트 -->
+    <update id="updateClientCosts" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET
+            total_pay = total_pay + #{controllerTotalPay},
+            miss_cost = miss_cost + #{controllerTotalMiss},
+            point = point - #{client_use_point} + #{store_point},
+            visit_count = visit_count + 1,
+            client_price = #{clientPrice}
+
+        WHERE idx = #{client_idx}
+    </update>
+    <select id="selecttotalVist" parameterType="hashmap" resultType="hashmap">
+        SELECT sum(a.dateCount) AS totalVisit
+        FROM
+            (SELECT 1 AS dateCount
+              FROM ${shop_id}_sales
+              WHERE client_idx = ${client_idx} AND services_type = 0 AND status = 0
+              GROUP BY DATE(DATE_FORMAT(date, '%Y-%m-%d'))
+            ) AS a
+    </select>
+    <select id="selecttotalPay" parameterType="hashmap" resultType="hashmap">
+        SELECT sum(total_exhaust) + sum(total_cost) AS totalPay
+        FROM ${shop_id}_sales
+        WHERE client_idx = ${client_idx} AND services_type = 0 AND status = 0
+    </select>
+    <!-- 미수금 정산 -->
+    <insert id="insertPayTheMissCost" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO ${shop_id}_sales (
+		  shop_idx,
+		  client_idx,
+		  memo,
+		  date,
+		  total_cost,
+		  status,
+		  sale_resource,
+		  services_type
+		)
+		VALUES (
+		  #{shop_idx},
+		  #{client_idx},
+		  #{memo},
+		  #{now},
+		  #{total_cost},
+		  2,
+		  #{resources},
+		  4
+		)
+    </insert>
+    <!-- 고객 미수금 수정 -->
+    <update id="updateClientMissCost" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET miss_cost = miss_cost - #{total_cost}
+        WHERE idx = #{client_idx}
+    </update>
+    <!--판매 취소로 인한 회원 정보 복구-->
+    <update id="updateClientRestorePrice" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET
+            point = point - ${restorePoint},
+            total_pay = total_pay - ${restoreTotalPay}
+            <foreach collection="restorePrepaid" item="item" index="index">
+                ,prepaid =
+                    JSON_SET(
+                        prepaid,
+                        CONCAT(
+                            REPLACE(
+                                JSON_SEARCH(
+                                    prepaid->'$[*].sale_idx', 'one', ${restorePrepaid[index].sale_idx}
+                                ), "\"", ""
+                            ), ".cost"
+                        ),
+                        CONCAT(
+                            JSON_EXTRACT(
+                                prepaid,
+                                    CONCAT(
+                                        REPLACE(
+                                            JSON_SEARCH(
+                                                prepaid->'$[*].sale_idx', 'one', ${restorePrepaid[index].sale_idx}
+                                            ), "\"", ""
+                                    ), ".cost"
+                                )
+                            )  + ${restorePrepaid[index].cost},
+                        ""
+                        )
+                    )
+            </foreach>
+            <foreach collection="restoreTicket" item="item" index="index">
+                ,ticket =
+                    JSON_SET(
+                ticket,
+                        CONCAT(
+                            REPLACE(
+                                JSON_SEARCH(
+                ticket->'$[*].sale_idx', 'one', ${restoreTicket[index].sale_idx}
+                                ), "\"", ""
+                            ), ".count"
+                        ),
+                        CONCAT(
+                            JSON_EXTRACT(
+                ticket,
+                                CONCAT(
+                                    REPLACE(
+                                        JSON_SEARCH(
+                                            ticket->'$[*].sale_idx', 'one', ${restoreTicket[index].sale_idx}
+                                        ), "\"", ""
+                                    ), ".count"
+                                )
+                            )  + ${restoreTicket[index].count},
+                        ""
+                        )
+                    )
+            </foreach>
+        WHERE idx = #{client_idx}
+    </update>
+    <!-- 예약 상태 수정 -->
+    <update id="updateReservationStatus" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_reservation
+        SET status = ${res_status}
+        WHERE idx = #{res_idx}
+    </update>
+    <!-- 예약판 판매 취소 (판매 테이블)-->
+    <update id="updateCancelSale" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_sales
+        SET status = 3
+        WHERE res_idx = #{res_idx}
+    </update>
+
+    <!-- 판매 금액 불러오기 -->
+    <select id="amountAtTheTimeOfSaleCall" parameterType="hashmap" resultType="hashmap">
+        SELECT total_cost
+        FROM ${shop_id}_sales
+        WHERE idx = ${idx}
+    </select>
+    <!-- 환불 -->
+    <insert id="refundSubmit" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO ${shop_id}_sales (
+		  shop_idx,
+		  client_idx,
+		  memo,
+		  status,
+		  sale_resource,
+		  services_type,
+		  refund_name,
+		  refund_cost
+		)
+		VALUES (
+		  #{shop_idx},
+		  #{client_idx},
+		  #{refund_text},
+		  1,
+		  #{resource},
+		  4,
+		  #{refund_name},
+		  #{refund_cost}
+		)
+    </insert>
+    <!-- 회원권 삭제 + 비회원 전환 -->
+    <update id="clientHasMemberShipEnd" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET status_membership = 0
+        WHERE idx = #{client_idx}
+    </update>
+    <!-- 회원건 삭제 -->
+    <update id="clientHasMemberShipRemove" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET prepaid = JSON_SET(prepaid, CONCAT(REPLACE(JSON_SEARCH(prepaid->'$[*].sale_idx', 'one', #{client_has_sale_idx}),"\"",""),".cost"), 0)
+        WHERE idx = ${client_idx}
+    </update>
+    <!-- 티켓 삭제 -->
+    <update id="clientHasMemberShipTicketRemove" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET ticket = JSON_SET(ticket, CONCAT(REPLACE(JSON_SEARCH(ticket->'$[*].sale_idx', 'one', #{client_has_sale_idx}),"\"",""),".count"), 0)
+        WHERE idx = ${client_idx};
+    </update>
+    <!-- 총 결제금액 수정 -->
+    <update id="updateClientPrice" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        <if test="price_sign.equals('true')">
+            SET total_pay = total_pay - ${price_value},
+            client_price = (client_price + ((total_pay - ${price_value}) - miss_cost)) / (visit_count)
+        </if>
+        <if test="price_sign.equals('false')">
+            SET total_pay = total_pay + ${price_value},
+            client_price = (client_price + ((total_pay + ${price_value}) - miss_cost)) / (visit_count)
+        </if>
+        WHERE idx = ${client_idx};
+    </update>
+    <update id="updateClientPrice2" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        <if test="price_sign.equals('true')">
+            SET total_pay = total_pay - ${price_value},
+            client_price = (client_price + ((total_pay - ${price_value}) - miss_cost))
+        </if>
+        <if test="price_sign.equals('false')">
+            SET total_pay = total_pay + ${price_value},
+            client_price = (client_price + ((total_pay + ${price_value}) - miss_cost))
+        </if>
+        WHERE idx = ${client_idx};
+    </update>
+    <!-- 프로모션 가져오기 -->
+    <select id="promotionSelect" parameterType="hashmap" resultType="hashmap">
+        SELECT A.*
+        FROM (
+            SELECT idx
+            FROM promotion
+            WHERE shop_idx = #{shop_idx} AND DATE_FORMAT(date, '%Y%m') = DATE_FORMAT(#{forDate}, '%Y%m')
+        ) B
+        JOIN promotion A
+        ON A.idx = B.idx
+    </select>
+    <!-- 프로모션 성과 수정 -->
+    <update id="updatePromotionAchievement" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE promotion
+        SET achievement_cost = achievement_cost + #{achievement_cost}, achievement_count = achievement_count + #{achievement_count}
+        WHERE idx = #{idx}
+    </update>
+    <!-- 프로모션 성과 수정 -->
+    <update id="updateCancelPromotionAchievement" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE promotion A, ${shop_id}_sales B
+        SET A.achievement_cost = A.achievement_cost + IFNULL(CAST(JSON_EXTRACT(B.sale_resource,CONCAT(REPLACE(JSON_SEARCH(B.sale_resource->'$[*].services_idx', 'one', #{services_idx}), '\"', ''), '.sales_fee') ) AS SIGNED) * -1, 0),
+	        A.achievement_count = A.achievement_count + IFNULL(CAST(JSON_EXTRACT(B.sale_resource,CONCAT(REPLACE(JSON_SEARCH(B.sale_resource->'$[*].services_idx', 'one', #{services_idx}), '\"',''),'.count') ) AS SIGNED) * -1, 0)
+        WHERE A.idx = #{idx} AND B.res_idx = #{res_idx} AND B.status = 0;
+    </update>
+    <!-- 판매 취소를 위한 레코드 호출 -->
+    <select id="selectCancelSalesFromResIdx" parameterType="hashmap" resultType="hashmap">
+        SELECT *
+        FROM BeautyingNail.${shopId}_sales
+        WHERE res_idx = ${res_idx} AND status = 0
+    </select>
+    <!-- 문자 자동설정 가져오기 -->
+    <select id="selectReservationAutoMsg" parameterType="hashmap" resultType="hashmap">
+        SELECT *
+        FROM BeautyingNail.message_auto
+        WHERE shop_idx = ${shopIdx} AND onoff = 1 AND
+        <foreach collection="typeList" item="item" index="index" open="(" separator="OR" close=")">
+            type = ${item}
+        </foreach>
+    </select>
+    <select id="selectReservationAutoMsgAsync" parameterType="hashmap" resultType="hashmap">
+        SELECT *
+        FROM BeautyingNail.message_auto
+        WHERE shop_idx = ${shopIdx} AND onoff = 1 AND
+        <foreach collection="typeList" item="item" index="index" open="(" separator="OR" close=")">
+            type like #{item}
+        </foreach>
+    </select>
+    <!-- 자동 문자 msg_history insert -->
+    <insert id="insertAutoMsgHistory" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO ${shopId}_msg_history (
+            method,
+            target_count,
+            receipt_num,
+            send_type,
+            receive_time,
+            p_status,
+            wait,
+            content,
+            client_idx
+        )
+        VALUES (
+            ${method},
+            ${send_count},
+            #{receipt_num},
+            #{send_type},
+            #{receiveDate},
+            2,
+            #{send_count},
+            #{content},
+            ${client_idx}
+        )
+    </insert>
+    <!-- Prepaid History Insert -->
+    <insert id="insertPrepaidMsgHistory" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        INSERT INTO ${shop_id}_msg_history (
+            method,
+            target_count,
+            receipt_num,
+            send_type,
+            receive_time,
+            p_status
+            wait,
+            content,
+            client_idx,
+            sale_idx
+        )
+        VALUES (
+            ${method},
+            #{send_count},
+            #{receipt_num},
+            #{send_type},
+            #{receiveDate},
+            2,
+            #{send_count},
+            #{content},
+            ${client_idx},
+            ${sale_idx}
+        )
+    </insert>
+
+    <!-- 판매 데이터 불러오기 [key : sales_table idx]-->
+    <select id="selectSalesDataFromTableIdx" parameterType="hashmap" resultType="hashmap">
+        SELECT A.*, B.prepaid AS client_prepaid, B.ticket AS client_ticket
+    	FROM ${shop_id}_sales A
+    	LEFT JOIN ${shop_id}_client B
+    	ON A.client_idx = B.idx
+    	WHERE A.idx = ${sale_idx}
+    </select>
+    <!-- 판매 취소로 인한 판매 데이터 복구 -->
+    <update id="updateReturnSaleFromClientData" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET
+            <if test="!restore_prepaid.equals('')">prepaid = '${restore_prepaid}',</if>
+            <if test="!restore_ticket.equals('')">ticket = '${restore_ticket}',</if>
+            total_pay = total_pay - ${restore_total_pay},
+            point = point - ${store_point} + ${restore_point}
+        WHERE idx = #{client_idx}
+    </update>
+    <!-- 판매 상태 업데이트 -->
+    <update id="updateSaleStatusChange" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_sales
+        SET status = 3
+        WHERE idx = ${sale_idx}
+    </update>
+    <!-- 객단가만 갱신 -->
+    <update id="updateClientPriceVer2" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+        UPDATE ${shop_id}_client
+        SET client_price = #{clientPrice}
+        WHERE idx = #{client_idx}
+    </update>
+</mapper>

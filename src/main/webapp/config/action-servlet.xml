@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:mvc="http://www.springframework.org/schema/mvc"
+	   xmlns:aop="http://www.springframework.org/schema/aop" xmlns:beans="http://www.springframework.org/schema/beans"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!-- use-default-filters가 true일 경우 base-package 하부에 존재하는 클래스들 중에서 @Controller , @Component, @Repository @Service 가 선언된 클래스들을 디폴트로 빈으로 등록  -->
+    <context:component-scan base-package="kr.co.serinusSM" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+    <mvc:annotation-driven>
+        <mvc:argument-resolvers>
+            <bean class="kr.co.serinusSM.common.CustomMapArgumentResolver" />
+        </mvc:argument-resolvers>
+    </mvc:annotation-driven>
+    <aop:aspectj-autoproxy/>
+    <bean id="loggerAspect" class="kr.co.serinusSM.common.interceptor.LoggerAspect" />
+    <bean class="org.springframework.web.servlet.view.BeanNameViewResolver" p:order="0" />
+    <bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" />
+    <bean
+            class="org.springframework.web.servlet.view.UrlBasedViewResolver" p:order="1"
+            p:viewClass="org.springframework.web.servlet.view.JstlView"
+            p:prefix="/WEB-INF/jsp/" p:suffix=".jsp">
+    </bean>
+
+    <!--
+		LinkID : 링크허브에서 발급받은 파트너 링크아이디.
+		SecretKey : 링크허브에서 발급받는 비밀키.
+		IsTest : true이면 test.popbill.com으로 연결, 기본값은 false.
+	-->
+    <util:properties id="EXAMPLE_CONFIG">
+        <beans:prop key="TestCorpNum">6173622290</beans:prop>
+        <beans:prop key="TestUserID">MansOfBeauty</beans:prop>
+        <beans:prop key="LinkID">MOB</beans:prop>
+        <beans:prop key="SecretKey">6C/QkhPLqmShhCXARjL3ALF2D2uXFIK4CxdGZ0Yy+p4=</beans:prop>
+        <beans:prop key="IsTest">false</beans:prop>
+    </util:properties>
+
+    <beans:beans>
+        <!-- 세금계산서 Service Implementation Bean registration.	-->
+        <beans:bean id="taxinvoiceService" class="com.popbill.api.taxinvoice.TaxinvoiceServiceImp">
+            <beans:property name="linkID" value="#{EXAMPLE_CONFIG.LinkID}"/>
+            <beans:property name="secretKey" value="#{EXAMPLE_CONFIG.SecretKey}"/>
+            <beans:property name="test" value="#{EXAMPLE_CONFIG.IsTest}"/>
+        </beans:bean>
+
+        <!-- 전자명세서 Service Implementation Bean registration.  -->
+        <beans:bean id="statementService" class="com.popbill.api.statement.StatementServiceImp">
+            <beans:property name="linkID" value="#{EXAMPLE_CONFIG.LinkID}"/>
+            <beans:property name="secretKey" value="#{EXAMPLE_CONFIG.SecretKey}"/>
+            <beans:property name="test" value="#{EXAMPLE_CONFIG.IsTest}"/>
+        </beans:bean>
+
+        <!-- 현금영수증 Service Implementation Bean registration.  -->
+        <beans:bean id="cashbillService" class="com.popbill.api.cashbill.CashbillServiceImp">
+            <beans:property name="linkID" value="#{EXAMPLE_CONFIG.LinkID}"/>
+            <beans:property name="secretKey" value="#{EXAMPLE_CONFIG.SecretKey}"/>
+            <beans:property name="test" value="#{EXAMPLE_CONFIG.IsTest}"/>
+        </beans:bean>
+
+        <!-- 	문자메시지 Service Implementation Bean registration.	-->
+        <beans:bean id="messageService" class="com.popbill.api.message.MessageServiceImp">
+            <beans:property name="linkID" value="#{EXAMPLE_CONFIG.LinkID}"/>
+            <beans:property name="secretKey" value="#{EXAMPLE_CONFIG.SecretKey}"/>
+            <beans:property name="test" value="#{EXAMPLE_CONFIG.IsTest}"/>
+        </beans:bean>
+
+        <!-- 팩스 Service Implementation Bean registration.  -->
+        <beans:bean id="faxService" class="com.popbill.api.fax.FaxServiceImp">
+            <beans:property name="linkID" value="#{EXAMPLE_CONFIG.LinkID}"/>
+            <beans:property name="secretKey" value="#{EXAMPLE_CONFIG.SecretKey}"/>
+            <beans:property name="test" value="#{EXAMPLE_CONFIG.IsTest}"/>
+        </beans:bean>
+
+        <!-- 홈택스 전자세금계산서 연계 Service Implementation Bean registration.  -->
+        <beans:bean id="htTaxinvoiceService" class="com.popbill.api.hometax.HTTaxinvoiceServiceImp">
+            <beans:property name="linkID" value="#{EXAMPLE_CONFIG.LinkID}"/>
+            <beans:property name="secretKey" value="#{EXAMPLE_CONFIG.SecretKey}"/>
+            <beans:property name="test" value="#{EXAMPLE_CONFIG.IsTest}"/>
+        </beans:bean>
+
+
+        <!-- 홈택스 현금영수증 연계 Service Implementation Bean registration.  -->
+        <beans:bean id="htCashbillService" class="com.popbill.api.hometax.HTCashbillServiceImp">
+            <beans:property name="linkID" value="#{EXAMPLE_CONFIG.LinkID}"/>
+            <beans:property name="secretKey" value="#{EXAMPLE_CONFIG.SecretKey}"/>
+            <beans:property name="test" value="#{EXAMPLE_CONFIG.IsTest}"/>
+        </beans:bean>
+
+        <!-- 휴폐업조회 Service Implementation Bean registration.  -->
+        <beans:bean id="closedownService" class="com.popbill.api.closedown.CloseDownServiceImp">
+            <beans:property name="linkID" value="#{EXAMPLE_CONFIG.LinkID}"/>
+            <beans:property name="secretKey" value="#{EXAMPLE_CONFIG.SecretKey}"/>
+            <beans:property name="test" value="#{EXAMPLE_CONFIG.IsTest}"/>
+        </beans:bean>
+
+        <!-- 카카오톡 Service Implementation Bean registration.  -->
+        <beans:bean id="kakaoService" class="com.popbill.api.kakao.KakaoServiceImp">
+            <beans:property name="linkID" value="#{EXAMPLE_CONFIG.LinkID}"/>
+            <beans:property name="secretKey" value="#{EXAMPLE_CONFIG.SecretKey}"/>
+            <beans:property name="test" value="#{EXAMPLE_CONFIG.IsTest}"/>
+        </beans:bean>
+    </beans:beans>
+</beans:beans>
+

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="employee">
+    <!-- 직원 리스트 가져오기 -->
+    <select id="selectAllEmpl" parameterType="hashmap" resultType="hashmap">
+        SELECT A.*
+        FROM (
+            SELECT idx
+            FROM employee
+            WHERE shop_idx = ${idx} AND status != 1
+        ) B
+        JOIN employee A
+        ON B.idx = A.idx
+        ORDER BY procedure_int ASC
+	</select>
+    <!-- 직원 리스트 가져오기 -->
+    <select id="selectEmplGoalData" parameterType="hashmap" resultType="hashmap">
+        SELECT A.idx, A.employee_goal
+        FROM (
+            SELECT idx
+            FROM shop_month_history
+            WHERE shop_idx = #{idx} AND DATE_FORMAT(DATE(date),'%Y%m') = DATE_FORMAT(DATE(#{forDate}),'%Y%m')
+        ) B
+        JOIN shop_month_history A
+        ON B.idx = A.idx
+	</select>
+    <!-- 직원 코드 생성 -->
+    <select id="selectEmplLargestNumber" parameterType="hashmap" resultType="hashmap">
+        SELECT IFNULL(MAX(code), -1) AS maxNumber
+        FROM (
+            SELECT idx
+            FROM employee
+            WHERE shop_idx = ${idx}
+        ) B
+        JOIN employee A
+        ON B.idx = A.idx
+	</select>
+    <!-- 직원 등록 -->
+    <insert id="insertNewEmployee" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+		INSERT INTO employee (code, name, memo, shop_idx, rank, tel, start_date, procedure_int)
+		VALUES (#{code}, #{name}, #{memo}, #{shopId}, #{rank}, #{tel} , #{date},
+		(select ifnull(max(a.procedure_int), 0)+1 from employee a))
+	</insert>
+    <!-- 직원 목표금액 등록 -->
+    <insert id="employeeGoalInsert" parameterType="hashmap" useGeneratedKeys="true" keyProperty="ID">
+		INSERT INTO shop_month_history (shop_idx, goal_cost, goal_exhaust, date, employee_goal)
+		VALUES(#{shop_idx}, #{goal_cost}, #{goal_exhaust}, now(), #{employee_goal})
+    </insert>
+    <!-- 직원 목표금액 수정 -->
+    <update parameterType="hashmap" id="employeeGoalUpdate" keyProperty="ID" useGeneratedKeys="true">
+		UPDATE shop_month_history
+		SET goal_cost = #{goal_cost}, goal_exhaust = #{goal_exhaust}, employee_goal = #{employee_goal}
+		WHERE idx = #{idx}
+    </update>
+    <!-- 직원 코드 중복 확인 -->
+    <select id="selectOverlapFromEmplCodeFromAjax" parameterType="hashmap" resultType="hashmap">
+        SELECT COUNT(A.idx) as count
+        FROM (
+            SELECT idx
+            FROM employee
+            WHERE shop_idx = #{shopId} AND code = #{code}
+        ) B
+        JOIN employee A
+        ON B.idx = A.idx
+	</select>
+    <!-- 직원 정보 수정 -->
+    <update parameterType="hashmap" id="updateModifiedEmplFromAjax" keyProperty="ID" useGeneratedKeys="true">
+		UPDATE employee
+		SET name = #{name}, code = #{code}, tel = #{tel}, memo = #{memo}, status = #{status}
+		WHERE idx = #{idx}
+    </update>
+    <!-- (this) 직원 순서 변경 -->
+    <update parameterType="hashmap" id="updateEmployeeProcedureThis" keyProperty="ID" useGeneratedKeys="true">
+		UPDATE employee
+		SET procedure_int = ${targetProcedure}
+		WHERE idx = #{thisIdx}
+    </update>
+    <!-- (target) 직원 순서 변경 -->
+    <update parameterType="hashmap" id="updateEmployeeProcedureTarget" keyProperty="ID" useGeneratedKeys="true">
+		UPDATE employee
+		SET procedure_int = ${thisProcedure}
+		WHERE idx = #{targetIdx}
+    </update>
+</mapper>

@@ -1,0 +1,117 @@
+<%@ page pageEncoding="utf-8" %>
+<div class="box-body box-content">
+    <%-- 시술(서비스) 선택 --%>
+    <button class="box-content-btn" onclick="serviceCall(this)"><i class="fas fa-plus"></i> 시술 추가</button>
+    <%-- 시술 모달 --%>
+    <div class="modal fade" id="service-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog service-modal">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <h2>시술추가</h2>
+                    <button class="close-btn02"  data-dismiss="modal"><i class="fas fa-times"></i></button>
+                    <%-- 직원 --%>
+                    <div name="service-detail-div" id="service-detail-div">
+                        <input type="hidden" id="empl_idx1" value=""/>
+                        <input type="hidden" id="empl_name1" value=""/>
+                        <input type="hidden" id="empl_idx2" value=""/>
+                        <input type="hidden" id="empl_name2" value=""/>
+                        <div class="service-modal-content">
+                            <h4>직원선택</h4>
+                        </div>
+                        <div name="service-employee-table" id="service-employee-table"></div>
+                        <%--<table class="table table-bordered text-center" name="service-employee-table" id="service-employee-table"></table>--%>
+                    </div>
+                    <%-- 시술 카테고리 --%>
+                    <div name="service-cate-div">
+                        <div class="service-modal-content">
+                            <h4>시술선택</h4>
+                        </div>
+                        <div name="service-cate-table"></div>
+                        <%--<table class="table table-bordered text-center" name="service-cate-table"></table>--%>
+                    </div>
+                    <%-- 시술 디테일 --%>
+                    <div name="service-detail-div">
+                        <div class="service-modal-content">
+                            <h4>상세선택</h4>
+                        </div>
+                        <div name="service-detail-table" id="service-detail-table"></div>
+                        <%--<table class="table table-bordered text-center" name="service-detail-table" id="service-detail-table"></table>--%>
+                    </div>
+                    <%-- 시술 담기 --%>
+                    <div class="check-service">
+                        <c:if test="${not empty serviceFlag && rMap.type eq 0}">
+                        <div>
+                            <button>
+                                <input type="hidden" name="empl_type" value="0">
+                                <input type="hidden" name="idx" value="${rMap.service_idx}">
+                                <input type="hidden" name="category" value="${rMap.category}">
+                                <input type="hidden" name="name" value="${rMap.service_name}">
+                                <input type="hidden" name="cost" value="${rMap.service_cost}">
+                                <input type="hidden" name="empl_idx1" value="${rMap.empl_idx}">
+                                <input type="hidden" name="empl_name1" value="${rMap.empl_name}">
+                                <input type="hidden" name="empl_idx2" value="">
+                                <input type="hidden" name="empl_name2" value="">
+                                <p>${rMap.service_name} - (${rMap.empl_name})</p>
+                            </button>
+                            <button onclick="checkedServiceRemove(this)"><i class="glyphicon glyphicon-remove"></i></button>
+                        </div>
+                        </c:if>
+                    </div>
+                    <div class="content02-save mt-15">
+                        <button type="button" class="" onclick="appendService(this)">추가</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%-- /.시술 모달 --%>
+    <table class="table sale-main-table">
+        <c:if test="${not empty serviceFlag && rMap.type eq 0}">
+            <thead>
+            <th width="20%">서비스명</th>
+            <th width="10%">단가</th>
+            <th width="10%">수량</th>
+            <th width="10%" onclick="dcClick('All')">할인</th>
+            <th width="10%">직원</th>
+            <th width="20%">금액</th>
+            <th width="15%">회원/티켓권</th>
+            <th width="5%">삭제</th>
+            </thead>
+            <tbody>
+            <tr data-value="${rMap.service_idx}">
+                <input type="hidden" name="cate_idx" value="${cateMap.idx}">
+                <td name="name" data-value="${rMap.category}">${rMap.service_name}</td>
+                <td name="one_cost">
+                    <p>${rMap.service_cost}</p>
+                    <input type="text" name="hidden_one_cost" value="${rMap.service_cost}" style="display: none;" onkeydown="onlyNumber(this);">
+                </td>
+                <td name="count">
+                    <p name="count">1</p>
+                    <i class="glyphicon glyphicon-plus-sign" onclick="countPlus(this);"></i>
+                    <i class="glyphicon glyphicon-minus-sign" onclick="countMinus(this);"></i>
+                </td>
+                <td name="dc" onclick="dcClick('None', this)"><p name="dc_text">할인</p><input type="hidden" name="dc" value="0"/>
+                </td>
+                <td name="empl">
+                    <input type="hidden" name="empl_idx1" value="${rMap.empl_idx}"/>
+                    <input type="hidden" name="empl_name1" value="${rMap.empl_name}"/>
+                    <p>${rMap.empl_name}</p>
+                </td>
+                <td name="cost">
+                    <input type="text" name="cost_text" onkeyup="serviceCostTextChange(this);" value="${rMap.service_cost}">
+                    <input type="hidden" name="exhaust_type" value="0"/>
+                    <input type="hidden" name="exhaust_cost" value="0"/>
+                    <input type="hidden" name="exhaust_name"/>
+                </td>
+                <td name="ticket">
+                    <div name="ticket-info"></div>
+                    <input type="hidden" name="ticket-sale-idx" value="0"/></td>
+                <td>
+                    <button class="service-service-tab-remove-btn"><i class="glyphicon glyphicon-remove"></i></button>
+                </td>
+            </tr>
+            </tbody>
+            </c:if>
+    </table>
+</div>

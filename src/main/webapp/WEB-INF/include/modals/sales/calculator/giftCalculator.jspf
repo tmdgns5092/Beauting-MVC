@@ -1,0 +1,79 @@
+<%@ page pageEncoding="utf-8" %>
+
+<!-- 상품권 Modal -->
+<div class="modal fade" id="giftModal" tabindex="-1" role="dialog" aria-labelledby="giftModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="sales-cash-modal">
+            <div class="modal-header" style="text-align: right">
+                <div class="close-btn" data-dismiss="modal">
+                    <img src="/static/test-img/close-btn.png" alt="X버튼 이미지">
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <h2>상품권</h2>
+                <input type="text" id="main-gift-input-text">
+                <table class="calculator">
+                    <tr>
+                        <td class="main-gift-btn" width="20%"><p>1</p></td>
+                        <td class="main-gift-btn" width="20%"><p>2</p></td>
+                        <td class="main-gift-btn" width="20%"><p>3</p></td>
+                        <td class="main-gift-btn" width="20%"><p>천원</p></td>
+                        <td class="main-gift-btn" width="20%"><p>만원</p></td>
+                    </tr>
+                    <tr>
+                        <td class="main-gift-btn"><p>4</p></td>
+                        <td class="main-gift-btn"><p>5</p></td>
+                        <td class="main-gift-btn"><p>6</p></td>
+                        <td class="main-gift-btn" colspan="2"><p>계산완료</p></td>
+                    </tr>
+                    <tr>
+                        <td class="main-gift-btn"><p>7</p></td>
+                        <td class="main-gift-btn"><p>8</p></td>
+                        <td class="main-gift-btn"><p>9</p></td>
+                        <td class="main-gift-btn" colspan="2"><p>추가입력</p></td>
+                    </tr>
+                    <tr>
+                        <td class="main-gift-btn"><p>0</p></td>
+                        <td class="main-gift-btn"><p>00</p></td>
+                        <td class="main-gift-btn"><p>지움</p></td>
+                        <td class="main-gift-btn" colspan="2"><p data-dismiss="modal">취소</p></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function giftInputSelect(){
+        if(uk_noshow(uncomma($('#sale-main-total-gift').text())) == "0"){
+            $('#main-gift-input-text').val(uk_noshow(uncomma($('#sale-main-total-miss').text())));
+        } else{
+            $('#main-gift-input-text').val(uncomma($('#sale-main-total-gift').text()));
+        }
+    }
+    $('.main-gift-btn').click(function(){
+        var cost = $(this).find('p').text();
+        var input_cost = $('#main-gift-input-text').val();
+
+        if(cost == '천원'){$('#main-gift-input-text').val(input_cost + '000');}
+        else if(cost == '만원'){$('#main-gift-input-text').val(input_cost + '0000');}
+        else if(cost == '계산완료'){
+            // 계산 로직
+        }
+        else if(cost == '추가입력'){
+            $('#sale-main-total-gift').text(comma(uk_noshow(parseInt($('#main-gift-input-text').val()))));
+            totalCostMinus('gift');
+            $('#giftModal').modal('hide');
+        }
+        else if(cost == '지움'){ $('#main-gift-input-text').val(input_cost.substring(0, input_cost.length -1)); }
+        else if(cost == '취소'){}
+        else{
+            $('#main-gift-input-text').val(input_cost + cost);
+        }
+        $('#main-gift-input-text').val();
+    });
+</script>

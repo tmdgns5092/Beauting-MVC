@@ -1,0 +1,166 @@
+<%@ page pageEncoding="utf-8" %>
+<style type = "text/css">
+    /*로딩 이미지 css*/
+    #loading_div {position: absolute; top:0;left: 0; background-color: #dddddd; opacity: 0.8; z-index: 9999; width: 100%; height: 100%;}
+    #loading_img {position: absolute; top:50%; left:50%;}
+</style>
+<%-- 최종 결제 모달 --%>
+<div class="modal fade" id="last-pay-modal" tabindex="-1" role="dialog" aria-labelledby="last-pay-modal" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content last-pay-modal">
+            <div class="modal-body">
+                <button class="close-btn02" data-dismiss="modal"><i class="fas fa-times"></i></button>
+                <div class="last-pay-content">
+                    <ul>
+                        <li>
+                            <p>사용한 회원권 합계</p>
+                            <p id="final-modal-ex-cost"></p>
+                            <span>원</span>
+                        </li>
+                        <li>
+                            <p>사용한 티켓 횟수</p>
+                            <p id="final-modal-ex-count"></p>
+                            <span>개</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="last-pay-content">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>금액 합계</th>
+                            <th>현금 합계</th>
+                            <th>카드 합계</th>
+                            <th>상품권 합계</th>
+                            <th>기타 합계</th>
+                            <th>포인트 합계</th>
+                            <th>미수금 합계</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <%--금액 합계--%>
+                            <td>
+                                <p id="final-total-cost">0</p>
+                                <span>원</span>
+                            </td>
+                            <%--현금 합계--%>
+                            <td>
+                                <p id="final-total-money">0</p>
+                                <span>원</span>
+                            </td>
+                            <%--카드 합계--%>
+                            <td>
+                                <p id="final-total-card">0</p>
+                                <span>원</span>
+                            </td>
+                            <%--상품권 합계--%>
+                            <td>
+                                <p id="final-total-gift">0</p>
+                                <span>원</span>
+                            </td>
+                            <%--기타 합계--%>
+                            <td>
+                                <p id="final-total-other">0</p>
+                                <span>원</span>
+                            </td>
+                            <%--포인트 합계--%>
+                            <td>
+                                <p id="final-total-point">0</p>
+                                <span>원</span>
+                            </td>
+                            <%--미수금 합계--%>
+                            <td>
+                                <p id="final-total-miss">0</p>
+                                <span>원</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="last-pay-content03">
+                    <div class="last-pay-memo">
+                        <textarea id="fn-total-sales-memo" placeholder="최종결제 메모를 입력해주세요."></textarea>
+                    </div>
+                    <div class="last-pay-div">
+                        <h4>최종 결제 금액</h4>
+                        <div class="last-pay-num">
+                            <p id="final-total-pay">0</p>
+                            <span>원</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="final-point">
+                    <p>포인트 적립</p><button onclick="pointDIVShow()"><i class="glyphicon glyphicon-credit-card"></i></button>
+                    <p id="store-point-view">0</p><p>p</p>
+                </div>
+                <div class="last-pay-content last-pay-calculation" style="display: none;" id="final-modal-in-point-div">
+                    <h3>포인트 적립</h3>
+                    <div style="">
+                        <input type="text" id="fn-modal-store-point-text" placeholder="금액을 입력해주세요." onkeypress="onlyNumber(this)">
+                        <table id="fn-modal-store-point-table">
+                            <tbody>
+                            <tr>
+                                <td width="20%"><p>1</p></td>
+                                <td width="20%"><p>2</p></td>
+                                <td width="20%"><p>3</p></td>
+                                <td width="20%" class="exception" onclick="fn_point_fix('percent')"><p>% 적립</p></td>
+                            </tr>
+                            <tr>
+                                <td><p>4</p></td>
+                                <td><p>5</p></td>
+                                <td><p>6</p></td>
+                                <td class="exception" onclick="fn_point_fix('money')"><p>금액적립</p></td>
+                            </tr>
+                            <tr>
+                                <td><p>7</p></td>
+                                <td><p>8</p></td>
+                                <td><p>9</p></td>
+                                <td class="exception" onclick="fn_point_fix('cancel')">취소</td>
+                            </tr>
+                            <tr>
+                                <td><p>0</p></td>
+                                <td><p>00</p></td>
+                                <td><p><i class="fas fa-backspace"></i></p></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="content02-save mt-15">
+                    <button type="button" id = "insert_btn" >결제완료</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<%-- 최종 결제 모달 --%>
+<script>
+    /*중복 클릭 방지를 위한 변수*/
+    var insert_bool = true;
+
+
+    $(document).ready(function()
+    {
+        /*시작시 로딩 이미지 숨김*/
+        $('#loading_div').hide();
+
+    }).ajaxStart(function(){
+        /*ajax 작동중 로딩 이미지 표시*/
+        $('#loading_div').show();
+    }).ajaxStop(function(){
+        /*ajax 종료시 로딩이미지 숨김*/
+        $('#loading_div').hide();
+    });
+
+    /*결제완료 버튼 클릭시 중복확인 */
+    $("#insert_btn").on("click",function(){
+        if(insert_bool == true)
+        {
+            /*중복 변수 false*/
+            insert_bool = false;
+            allSaleInsert();
+        }
+    });
+</script>
+
