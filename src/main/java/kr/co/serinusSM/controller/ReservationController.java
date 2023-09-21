@@ -665,6 +665,8 @@ public class ReservationController {
                     else jobj.put("code", 902);
                 }catch(Exception e){
                     jobj.put("code", 900);
+                    jobj.put("error", e);
+                    jobj.put("message", e.printStackTrace());
                     e.printStackTrace();
                 }
             }else{
